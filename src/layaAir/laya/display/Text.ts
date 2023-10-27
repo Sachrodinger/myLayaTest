@@ -437,6 +437,26 @@ export class Text extends Sprite {
         }
     }
 
+    //设置上下渐变颜色，没有则使用color
+    get upDownCol(): string[] {
+        return this._textStyle.upDownCol;
+    }
+
+    set upDownCol(value: string[]) {
+        this.set_upDownCol(value);
+    }
+
+    set_upDownCol(value: string[]) {
+        if (this._textStyle.upDownCol != value) {
+            this._textStyle.upDownCol = value;
+            //如果仅仅更新颜色，无需重新排版
+            if (!this._isChanged && this._graphics && this._elements.length == 0)
+                this._graphics.replaceTextUpDownColor(this._textStyle.upDownCol);
+            else
+                this.markChanged();
+        }
+    }
+
     /**
      * <p>指定文本是否为粗体字。</p>
      * <p>默认值为 false，这意味着不使用粗体字。如果值为 true，则文本为粗体字。</p>
@@ -1526,9 +1546,9 @@ export class Text extends Sprite {
                     } else {
                         let ctxFont = (<any>cmd.style)._ctxFont;
                         if (cmd.style.stroke)
-                            graphics.fillBorderText(cmd.wt, x + cmd.x, y + cmd.y, ctxFont, cmd.style.color, null, cmd.style.stroke, cmd.style.strokeColor);
+                            graphics.fillBorderText(cmd.wt, x + cmd.x, y + cmd.y, ctxFont, cmd.style.color, null, cmd.style.stroke, cmd.style.strokeColor, this.upDownCol);
                         else
-                            graphics.fillText(cmd.wt, x + cmd.x, y + cmd.y, ctxFont, cmd.style.color, null);
+                            graphics.fillText(cmd.wt, x + cmd.x, y + cmd.y, ctxFont, cmd.style.color, null, this.upDownCol);
                     }
                 }
 

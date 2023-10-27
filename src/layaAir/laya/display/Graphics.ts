@@ -314,8 +314,8 @@ export class Graphics {
      * @param color 定义文本颜色，比如"#ff0000"。
      * @param textAlign 文本对齐方式，可选值："left"，"center"，"right"。
      */
-    fillText(text: string | WordText, x: number, y: number, font: string, color: string, textAlign: string): FillTextCmd {
-        return this.addCmd(FillTextCmd.create(text, x, y, font, color, textAlign, 0, ""));
+    fillText(text: string | WordText, x: number, y: number, font: string, color: string, textAlign: string, upDownCol?: string[]): FillTextCmd {
+        return this.addCmd(FillTextCmd.create(text, x, y, font, color, textAlign, 0, "", upDownCol));
     }
 
     /**
@@ -329,8 +329,8 @@ export class Graphics {
      * @param lineWidth		镶边线条宽度。
      * @param borderColor	定义镶边文本颜色。
      */
-    fillBorderText(text: string | WordText, x: number, y: number, font: string, fillColor: string, textAlign: string, lineWidth: number, borderColor: string): FillTextCmd {
-        return this.addCmd(FillTextCmd.create(text, x, y, font, fillColor, textAlign, lineWidth, borderColor));
+    fillBorderText(text: string | WordText, x: number, y: number, font: string, fillColor: string, textAlign: string, lineWidth: number, borderColor: string, upDownCol?: string[]): FillTextCmd {
+        return this.addCmd(FillTextCmd.create(text, x, y, font, fillColor, textAlign, lineWidth, borderColor, upDownCol));
     }
 
     /**
@@ -343,8 +343,8 @@ export class Graphics {
      * @param lineWidth	线条宽度。
      * @param textAlign	文本对齐方式，可选值："left"，"center"，"right"。
      */
-    strokeText(text: string | WordText, x: number, y: number, font: string, color: string, lineWidth: number, textAlign: string): FillTextCmd {
-        return this.addCmd(FillTextCmd.create(text, x, y, font, null, textAlign, lineWidth, color));
+    strokeText(text: string | WordText, x: number, y: number, font: string, color: string, lineWidth: number, textAlign: string, upDownCol?: string[]): FillTextCmd {
+        return this.addCmd(FillTextCmd.create(text, x, y, font, null, textAlign, lineWidth, color, upDownCol));
     }
 
     /**
@@ -426,6 +426,25 @@ export class Graphics {
                     break;
                 case DrawImageCmd.ID: //bitmap font
                     (cmd as DrawImageCmd).color = color != null ? ColorUtils.create(color).numColor : 0xffffffff;
+                    break;
+            }
+        }
+    }
+
+    /**
+     * @private
+     * 替换文本渐变颜色。
+     * @param color 颜色。
+     */
+    replaceTextUpDownColor(upDownCol: string[]): void {
+        this._repaint();
+        let cmds = this._cmds;
+        for (let i = cmds.length - 1; i > -1; i--) {
+            let cmd = cmds[i];
+            var cmdID: string = cmd.cmdID;
+            switch (cmdID) {
+                case FillTextCmd.ID:
+                    (cmd as FillTextCmd).upDownCol = upDownCol;
                     break;
             }
         }

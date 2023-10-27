@@ -245,7 +245,7 @@ export class ShurikenParticleInstanceSystem extends ShurikenParticleSystem {
         }
     }
 
-    addParticle(position: Vector3, direction: Vector3, time: number): boolean {
+    addParticle(position: Vector3, direction: Vector3, time: number, optimize : boolean = true): boolean {
         Vector3.normalize(direction, direction);
 
         //下一个粒子
@@ -261,11 +261,13 @@ export class ShurikenParticleInstanceSystem extends ShurikenParticleSystem {
         let transform = this._owner.transform;
         ShurikenParticleData.create(this, this._ownerRender);
 
-        let particleAge = this._currentTime - time;
-
-        if (particleAge >= ShurikenParticleData.startLifeTime) {
-            return true;
-        }
+        if(optimize)
+        {
+            let particleAge = this._currentTime - time;
+            if (particleAge >= ShurikenParticleData.startLifeTime) {
+                return true;
+            }
+        }  
 
         let pos: Vector3, rot: Quaternion;
         if (this.simulationSpace == 0) {
@@ -528,6 +530,51 @@ export class ShurikenParticleInstanceSystem extends ShurikenParticleSystem {
             //Stat.trianglesFaces += this._meshIndexCount / 3 * indexCount;
             //Stat.renderBatches++;
         }
+    }
+
+    //zzw:新增
+    //给定时间模拟播放函数
+    /**
+     * 通过指定时间模拟粒子系统状态，并暂停播放。
+     * @param time 粒子系统运行时间。
+     */
+    simulateCurrentTime(time : number): void {
+        super.simulateCurrentTime(time);
+        //更新计算存活粒子并传入数据结构,自带函数不好用，修改下
+        // this._firstNewElement = this._firstFreeElement;
+        // this._retireActiveParticles();
+        {
+            const epsilon = 0.0001;
+            while (this._firstActiveElement != this._firstFreeElement) {
+                let index = this._firstActiveElement * this._floatCountPerParticleData;
+                let timeIndex = index + this._timeIndex;
+                let particleAge = this._currentTime - this._instanceVertex[timeIndex];
+                if (particleAge + epsilon < this._instanceVertex[index + this._startLifeTimeIndex]) {
+                    break;
+                }
+                this._instanceVertex[timeIndex] = this._drawCounter;
+                this._firstActiveElement++;
+                if (this._firstActiveElement >= this._bufferMaxParticles) {
+                    this._firstActiveElement = 0;
+                }
+            }
+            let byteStride = this._floatCountPerParticleData * 4;
+            if (this._firstActiveElement < this._firstFreeElement) {
+                let activeStart = this._firstActiveElement * byteStride;
+                this._instanceParticleVertexBuffer.setData(this._instanceVertex.buffer, 0, activeStart, (this._firstFreeElement - this._firstActiveElement) * byteStride);
+                // console.log("this._firstFreeElement -- this._firstActiveElement:" + this._firstFreeElement + " - " + this._firstActiveElement);
+            }
+            else {
+                let start = this._firstActiveElement * byteStride;
+                let a = this._bufferMaxParticles - this._firstActiveElement;
+                this._instanceParticleVertexBuffer.setData(this._instanceVertex.buffer, 0, start, a * byteStride);
+                if (this._firstFreeElement > 0) {
+                    this._instanceParticleVertexBuffer.setData(this._instanceVertex.buffer, a * byteStride, 0, this._firstFreeElement * byteStride);
+                }
+            }
+        }
+        // this._freeRetiredParticles();//不需要更新这个，用不到，每次模拟都是全部更新
+        this.pause();
     }
 
     destroy(): void {

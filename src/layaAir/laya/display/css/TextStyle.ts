@@ -52,6 +52,8 @@ export class TextStyle {
 
     strikethrough: boolean;
 
+    upDownCol: string[];
+
     constructor() {
         this.font = "";
         this.fontSize = 12;
@@ -65,6 +67,7 @@ export class TextStyle {
         this.leading = 2;
         this.stroke = 0;
         this.strokeColor = "#000000";
+        this.upDownCol = null;
     }
 }
 

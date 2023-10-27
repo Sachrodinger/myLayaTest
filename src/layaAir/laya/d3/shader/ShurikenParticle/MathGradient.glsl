@@ -1,7 +1,7 @@
-float getCurValueFromGradientFloat(in vec2 gradientNumbers[4], in float normalizedAge)
+float getCurValueFromGradientFloat(in vec2 gradientNumbers[8], in float normalizedAge)
 {
     float curValue;
-    for (int i = 1; i < 4; i++)
+    for (int i = 1; i < 8; i++)
 	{
 	    vec2 gradientNumber = gradientNumbers[i];
 	    float key = gradientNumber.x;
@@ -17,11 +17,11 @@ float getCurValueFromGradientFloat(in vec2 gradientNumbers[4], in float normaliz
     return curValue;
 }
 
-float getTotalValueFromGradientFloat(in vec2 gradientNumbers[4],
+float getTotalValueFromGradientFloat(in vec2 gradientNumbers[8],
     in float normalizedAge)
 {
     float totalValue = 0.0;
-    for (int i = 1; i < 4; i++)
+    for (int i = 1; i < 8; i++)
 	{
 	    vec2 gradientNumber = gradientNumbers[i];
 	    float key = gradientNumber.x;
@@ -80,10 +80,10 @@ vec4 getColorFromGradient(in vec2 gradientAlphas[COLORCOUNT],
     return overTimeColor;
 }
 
-float getFrameFromGradient(in vec2 gradientFrames[4], in float normalizedAge)
+float getFrameFromGradient(in vec2 gradientFrames[8], in float normalizedAge)
 {
     float overTimeFrame;
-    for (int i = 1; i < 4; i++)
+    for (int i = 1; i < 8; i++)
 	{
 	    vec2 gradientFrame = gradientFrames[i];
 	    float key = gradientFrame.x;

@@ -207,6 +207,14 @@ export class Label extends UIComponent {
         this._tf.color = value;
     }
 
+    get upDownCol(): string[] {
+        return this._tf.upDownCol;
+    }
+
+    set upDownCol(value: string[]) {
+        this._tf.upDownCol = value;
+    }
+
     /**
      * @copy laya.display.Text#font
      */

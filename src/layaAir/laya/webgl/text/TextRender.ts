@@ -179,7 +179,7 @@ export class TextRender {
         this._fast_filltext(ctx, data, x, y, font, color, strokeColor, lineWidth, nTextAlign);
     }
 
-    _fast_filltext(ctx: Context, data: string | WordText | null, x: number, y: number, font: FontInfo, color: string, strokeColor: string | null, lineWidth: number, textAlign: number): void {
+    _fast_filltext(ctx: Context, data: string | WordText | null, x: number, y: number, font: FontInfo, color: string, strokeColor: string | null, lineWidth: number, textAlign: number, upDownCol?:string[]): void {
         if (data && !(data.length >= 1)) return;	// length有可能是 undefined
         if (lineWidth < 0) lineWidth = 0;
         this.setFont(font);
@@ -267,7 +267,7 @@ export class TextRender {
                     curstr = this.getNextChar(str);
                     if (!curstr)
                         break;
-                    ri = this.getCharRenderInfo(curstr, font, color, strokeColor, lineWidth, false);
+                    ri = this.getCharRenderInfo(curstr, font, color, strokeColor, lineWidth, false, upDownCol);
                     if (!ri) {
                         // 没有分配到。。。
                         break;
@@ -293,7 +293,7 @@ export class TextRender {
                 // 如果要整句话渲染
                 var margin = LayaEnv.isConch ? 0 : (font._size / 3 | 0);  // margin保持与charrender_canvas的一致
                 var isotex = TextRender.noAtlas || (strWidth + margin + margin) * this.fontScaleX > TextRender.atlasWidth;	// 独立贴图还是大图集。需要考虑margin
-                ri = this.getCharRenderInfo(str, font, color, strokeColor, lineWidth, isotex);
+                ri = this.getCharRenderInfo(str, font, color, strokeColor, lineWidth, isotex, upDownCol);
                 // 整句渲染，则只有一个贴图
                 sameTexData[0] = { texgen: ((<TextTexture>ri.tex)).genID, tex: ri.tex, words: [{ ri: ri, x: 0, y: 0, w: ri.bmpWidth / this.fontScaleX, h: ri.bmpHeight / this.fontScaleY }] };
             }
@@ -366,7 +366,7 @@ export class TextRender {
         return false;
     }
 
-    getCharRenderInfo(str: string, font: FontInfo, color: string, strokeColor: string | null, lineWidth: number, isoTexture: boolean = false): CharRenderInfo {
+    getCharRenderInfo(str: string, font: FontInfo, color: string, strokeColor: string | null, lineWidth: number, isoTexture: boolean = false, upDownCol?:string[]): CharRenderInfo {
         var fid = this.mapFont[font._family];
         if (fid == undefined) {
             this.mapFont[font._family] = fid = this.fontID++;
@@ -422,7 +422,7 @@ export class TextRender {
         if (isoTexture) {
             // 独立贴图
             this.charRender.fontsz = font._size;
-            imgdt = this.charRender.getCharBmp(str, this.fontStr, lineWidth, color, strokeColor, ri, margin, margin, margin, margin, null);
+            imgdt = this.charRender.getCharBmp(str, this.fontStr, lineWidth, color, strokeColor, ri, margin, margin, margin, margin, null, upDownCol);
             // 这里可以直接
             if (imgdt) {
                 var tex = TextTexture.getTextTexture(imgdt.width, imgdt.height);
@@ -455,7 +455,7 @@ export class TextRender {
             }
             this.charRender.fontsz = font._size;
             imgdt = this.charRender.getCharBmp(str, this.fontStr, lineWidth, color, strokeColor, ri,
-                margin, margin, margin, margin, TextRender.imgdtRect);
+                margin, margin, margin, margin, TextRender.imgdtRect, upDownCol);
             if (imgdt) {
                 atlas = this.addBmpData(imgdt, ri);
                 if (TextRender.isWan1Wan) {

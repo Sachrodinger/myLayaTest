@@ -99,9 +99,9 @@ export class CharRender_Canvas extends ICharRender {
 	 * @override
 	 */
 	getCharBmp(char: string, font: string, lineWidth: number, colStr: string, strokeColStr: string, cri: CharRenderInfo,
-		margin_left: number, margin_top: number, margin_right: number, margin_bottom: number, rect: any[] | null = null): ImageData | null {
+		margin_left: number, margin_top: number, margin_right: number, margin_bottom: number, rect: any[] | null = null, upDownCol?:string[]): ImageData | null {
 		if (!this.supportImageData)
-			return this.getCharCanvas(char, font, lineWidth, colStr, strokeColStr, cri, margin_left, margin_top, margin_right, margin_bottom);
+			return this.getCharCanvas(char, font, lineWidth, colStr, strokeColStr, cri, margin_left, margin_top, margin_right, margin_bottom, upDownCol);
 		var ctx: any = this.ctx;
 
 		var sz = this.fontsz;
@@ -143,7 +143,12 @@ export class CharRender_Canvas extends ICharRender {
 			ctx.lineWidth = lineWidth;
 			ctx.strokeText(char, margin_left, margin_top + sz / 2);
 		}
-		if (colStr) {
+
+        if (upDownCol) {
+            ctx.fillStyle = this.getLingrad(ctx, char, upDownCol);
+			ctx.fillText(char, margin_left, margin_top + sz / 2);
+        }
+		else if (colStr) {
 			ctx.fillStyle = colStr;
 			ctx.fillText(char, margin_left, margin_top + sz / 2);
 		}
@@ -166,7 +171,7 @@ export class CharRender_Canvas extends ICharRender {
 		return imgdt;
 	}
 
-	getCharCanvas(char: string, font: string, lineWidth: number, colStr: string, strokeColStr: string, cri: CharRenderInfo, margin_left: number, margin_top: number, margin_right: number, margin_bottom: number): ImageData {
+	getCharCanvas(char: string, font: string, lineWidth: number, colStr: string, strokeColStr: string, cri: CharRenderInfo, margin_left: number, margin_top: number, margin_right: number, margin_bottom: number, upDownCol?:string[]): ImageData {
 		var ctx: any = this.ctx;
 
 		//ctx.save();
@@ -213,12 +218,22 @@ export class CharRender_Canvas extends ICharRender {
 			if (ctx.fillAndStrokeText) {
 				ctx.fillAndStrokeText(char, 0, sz / 2);
 			} else {
-				ctx.strokeText(char, 0, sz / 2);
-				ctx.fillText(char, 0, sz / 2);
+                if (upDownCol) {
+                    ctx.fillStyle = this.getLingrad(ctx, char, upDownCol);
+                    ctx.fillText(char, margin_left, margin_top + sz / 2);
+                } else {
+                    ctx.strokeText(char, 0, sz / 2);
+                    ctx.fillText(char, 0, sz / 2);
+                }
 			}
 		} else if (colStr) {
-			ctx.fillStyle = colStr;
-			ctx.fillText(char, 0, sz / 2);
+            if (upDownCol) {
+                ctx.fillStyle = this.getLingrad(ctx, char, upDownCol);
+                ctx.fillText(char, margin_left, margin_top + sz / 2);
+            } else {
+                ctx.fillStyle = colStr;
+                ctx.fillText(char, 0, sz / 2);
+            }
 		}
 		if (this.showDbgInfo) {
 			ctx.strokeStyle = '#ff0000';
@@ -231,5 +246,21 @@ export class CharRender_Canvas extends ICharRender {
 		cri.bmpHeight = CharRender_Canvas.canvas.height;
 		return CharRender_Canvas.canvas;
 	}
+
+    getLingrad(ctx:any, char:string, colors:string[]) {
+        let textMetrics = ctx.measureText(char);
+        let text_height = textMetrics.fontBoundingBoxDescent;
+        let gradient = ctx.createLinearGradient(
+            0,
+            0,
+            0,
+            text_height + text_height
+        );
+        colors.map((item,i) =>{
+            //偏移值根据颜色个数平均分。
+            gradient.addColorStop(i/(colors.length-1), item);
+        })
+        return gradient;
+    }
 }
 

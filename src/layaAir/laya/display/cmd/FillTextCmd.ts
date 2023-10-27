@@ -26,10 +26,15 @@ export class FillTextCmd {
     private _wordText: WordText;
     private _font: string;
     private _color: string;
+    private _upDownCol:string[];
+    private _borderColor: string | null;
+    private _lineWidth: number;
+    private _textAlign: number;
     private _storkColor: string = '#000000';
     private _stork: number;
     private _align: number;
     private _fontObj: FontInfo;
+
 
     
     set text(value: string) {
@@ -58,7 +63,7 @@ export class FillTextCmd {
     }
 
 
-    static create(text: string | WordText | null, x: number, y: number, font: string, color: string | null, align: string, stork: number, storkColor: string | null): FillTextCmd {
+    static create(text: string | WordText | null, x: number, y: number, font: string, color: string | null, align: string, stork: number, storkColor: string | null, upDownCol: string[] | null): FillTextCmd {
         var cmd: FillTextCmd = Pool.getItemByClass("FillTextCmd", FillTextCmd);
         cmd._text = null;
         cmd._wordText = null;
@@ -68,7 +73,8 @@ export class FillTextCmd {
         cmd.color = color;
         cmd._stork = stork;
         cmd._storkColor = storkColor;
-
+        cmd._upDownCol = upDownCol;
+        
         switch (align) {
             case 'center':
                 cmd._align = Const.ENUM_TEXTALIGN_CENTER;
@@ -110,7 +116,7 @@ export class FillTextCmd {
             this._color = '#ffffff';
         }
 
-        context._fast_filltext(this._wordText || this._text, this.x + gx, this.y + gy, this._fontObj, this._color, this._storkColor, this._stork, this._align);
+        context._fast_filltext(this._wordText || this._text, this.x + gx, this.y + gy, this._fontObj, this._color, this._storkColor, this._stork, this._align,this._upDownCol);
     }
 
     /**@private */
@@ -142,6 +148,11 @@ export class FillTextCmd {
 
     set color(value: string) {
         this._color = value;
+        this._wordText && this._wordText.cleanCache();
+    }
+
+    set upDownCol(value: string[]) {
+        this._upDownCol = value;
         this._wordText && this._wordText.cleanCache();
     }
 }

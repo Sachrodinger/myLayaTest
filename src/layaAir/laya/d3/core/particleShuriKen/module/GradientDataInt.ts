@@ -17,7 +17,7 @@ export class GradientDataInt implements IClone {
 	 * 创建一个 <code>GradientDataInt</code> 实例。
 	 */
 	constructor() {
-		this._elements = new Float32Array(8);
+		this._elements = new Float32Array(16);
 	}
 
 	/**
@@ -26,8 +26,8 @@ export class GradientDataInt implements IClone {
 	 * @param	value 整形值。
 	 */
 	add(key: number, value: number): void {
-		if (this._currentLength < 8) {
-			if ((this._currentLength === 6) && ((key !== 1))) {
+		if (this._currentLength < 16) {
+			if ((this._currentLength === 14) && ((key !== 1))) {
 				key = 1;
 				console.log("Warning:the forth key is  be force set to 1.");
 			}

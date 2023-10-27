@@ -13,6 +13,7 @@ import { ILaya3D } from "../../../../ILaya3D"
 import { ShaderInstance } from "../../../RenderEngine/RenderShader/ShaderInstance"
 import { ShaderPass } from "../../../RenderEngine/RenderShader/ShaderPass"
 import { SubShader } from "../../../RenderEngine/RenderShader/SubShader"
+import { RendererBase } from "../../../extensions/SRP/Runtime/RendererBase"
 
 /**
  * <code>RenderElement</code> 类用于实现渲染元素。
@@ -94,6 +95,18 @@ export class RenderElement {
         return this._baseRender;
     }
 
+    private _batchPass: string[] = [];
+    get batchPass(): string[] {
+        if (this._batchPass.length <= 0) {
+            this.material._shader._subShaders.forEach(a => {
+                a._passes.forEach(p => {
+                    this._batchPass.push(p._pipelineMode)
+                })
+            })
+        }
+        return this._batchPass;
+    }
+
 
 
     /** @internal */
@@ -143,6 +156,7 @@ export class RenderElement {
         for (var j: number = 0, m: number = passes.length; j < m; j++) {
             var pass: ShaderPass = passes[j];
             //NOTE:this will cause maybe a shader not render but do prepare before，but the developer can avoide this manual,for example shaderCaster=false.
+            // czh: TODO. try remove this
             if (pass._pipelineMode !== context.pipelineMode)
                 continue;
 
@@ -218,6 +232,23 @@ export class RenderElement {
         }
     }
 
+    _updateInRenderer(renderer: RendererBase, context: RenderContext3D, customShader: Shader3D, replacementTag: string, excludeLightModes: string[], subshaderIndex: number = 0) {
+        if (this.material) {//材质可能为空
+            this._convertSubShader(customShader, replacementTag, subshaderIndex);
+            if (!this.renderSubShader)
+                return;
+            var renderQueueWithPipelineMode = renderer._getRenderQueue(this.material.renderQueue);
+            //
+            //this.batchPass;
+            for (let i = 0, j = this.batchPass.length; i < j; i++) {
+                let mode = this.batchPass[i];
+                if (-1 == excludeLightModes.indexOf(mode)) {
+                    renderQueueWithPipelineMode.addRenderElement(this, mode);
+                }
+            }
+        }
+    }
+
     /**
      * pre update data
      * @param context 
@@ -226,7 +257,7 @@ export class RenderElement {
 
         var sceneMark: number = ILaya3D.Scene3D._updateMark;
         var transform: Transform3D = this.transform;
-        context.renderElement = this;
+        context.renderElement = this; // czh:这句话会影响到 this._geometry._updateRenderParams(context) 更新数据
         //model local
         var modelDataRender: boolean = (!!this._baseRender) ? (sceneMark !== this._baseRender._sceneUpdateMark || this.renderType !== this._baseRender._updateRenderType) : false;
         if (modelDataRender) {
@@ -247,10 +278,14 @@ export class RenderElement {
             subUbo._needUpdate && BaseRender._transLargeUbO.updateSubData(subUbo);
         }
         //context.shader = this._renderElementOBJ._subShader;
-        this._renderElementOBJ._isRender = this._geometry._prepareRender(context);
+        this._renderElementOBJ._isRender = this._geometry._prepareRender(context); //是否需要渲染
         this._geometry._updateRenderParams(context);
         this.compileShader(context._contextOBJ);
         this._renderElementOBJ._invertFront = this.getInvertFront();
+    }
+
+    compileShader1(context: RenderContext3D) {
+        this.compileShader(context._contextOBJ);
     }
 
     /**
