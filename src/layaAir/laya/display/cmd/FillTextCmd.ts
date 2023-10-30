@@ -30,8 +30,8 @@ export class FillTextCmd {
     private _borderColor: string | null;
     private _lineWidth: number;
     private _textAlign: number;
-    private _storkColor: string = '#000000';
-    private _stork: number;
+    private _strokeColor: string = '#000000';
+    private _stroke: number;
     private _align: number;
     private _fontObj: FontInfo;
 
@@ -43,17 +43,17 @@ export class FillTextCmd {
     get text() {
         return this._text;
     }
-    set storkColor(value: string) {
-        this._storkColor = value;
+    set strokeColor(value: string) {
+        this._strokeColor = value;
     }
-    get storkColor() {
-        return this._storkColor;
+    get strokeColor() {
+        return this._strokeColor;
     }
-    set stork(value: number) {
-        this._stork = value;
+    set stroke(value: number) {
+        this._stroke = value;
     }
-    get stork() {
-        return this._stork;
+    get stroke() {
+        return this._stroke;
     }
     set align(value: number) {
         this._align = value;
@@ -63,7 +63,7 @@ export class FillTextCmd {
     }
 
 
-    static create(text: string | WordText | null, x: number, y: number, font: string, color: string | null, align: string, stork: number, storkColor: string | null, upDownCol: string[] | null): FillTextCmd {
+    static create(text: string | WordText | null, x: number, y: number, font: string, color: string | null, align: string, stroke: number, strokeColor: string | null, upDownCol: string[] | null): FillTextCmd {
         var cmd: FillTextCmd = Pool.getItemByClass("FillTextCmd", FillTextCmd);
         cmd._text = null;
         cmd._wordText = null;
@@ -71,10 +71,9 @@ export class FillTextCmd {
         cmd.y = y;
         cmd.font = font;
         cmd.color = color;
-        cmd._stork = stork;
-        cmd._storkColor = storkColor;
+        cmd._stroke = stroke;
+        cmd._strokeColor = strokeColor;
         cmd._upDownCol = upDownCol;
-        
         switch (align) {
             case 'center':
                 cmd._align = Const.ENUM_TEXTALIGN_CENTER;
@@ -116,7 +115,7 @@ export class FillTextCmd {
             this._color = '#ffffff';
         }
 
-        context._fast_filltext(this._wordText || this._text, this.x + gx, this.y + gy, this._fontObj, this._color, this._storkColor, this._stork, this._align,this._upDownCol);
+        context._fast_filltext(this._wordText || this._text, this.x + gx, this.y + gy, this._fontObj, this._color, this._strokeColor, this._stroke, this._align, this._upDownCol);
     }
 
     /**@private */
