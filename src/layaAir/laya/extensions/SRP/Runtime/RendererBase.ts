@@ -92,7 +92,7 @@ export abstract class RendererBase {
         } else
             RenderTexture.bindCanvasRender = this.currentCamera._internalRenderTexture;
         // after rendering TODO. recover的问题导致的
-        this.executeRenderPass(this.activeRenderPasses, context, scene, this, CameraEventFlags.AfterEveryThing, CameraEventFlags.AfterEveryThing);
+        this.executeRenderPass(this.activeRenderPasses, context, scene, this, CameraEventFlags.AfterEveryThing, CameraEventFlags.AfterEveryThing+100); //临时+100
 
         //执行完pass
         this.FinishRendering(context);
