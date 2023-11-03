@@ -8,6 +8,8 @@ export interface ISceneRenderManager {
 
     list: SingletonList<BaseRender>;
 
+    dict:{[cullingMask:number]:SingletonList<BaseRender>};
+
     /**
      * add one BaseRender
      * @param object 

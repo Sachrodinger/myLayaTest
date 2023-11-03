@@ -28,6 +28,14 @@ export class SceneRenderManager {
         this._sceneManagerOBJ.list = value;
     }
 
+    get dict():{[cullingMask:number]:SingletonList<BaseRender>}{
+        return this._sceneManagerOBJ.dict;
+    }
+
+    set dict(value :{[cullingMask:number]:SingletonList<BaseRender>}){
+        this._sceneManagerOBJ.dict = value;
+    }
+
     /**
      * add Render Node
      * @param object 

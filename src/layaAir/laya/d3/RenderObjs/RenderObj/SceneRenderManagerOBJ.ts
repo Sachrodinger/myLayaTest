@@ -5,6 +5,8 @@ import { BaseRender } from "../../core/render/BaseRender";
 
 export class SceneRenderManagerOBJ implements ISceneRenderManager {
     /** @internal */
+    _rendersWithCullingMask: {[cullingMask:number]:SingletonList<BaseRender>} = {};
+    /** @internal */
     _renders: SingletonList<BaseRender> = new SingletonList();
     _motionRenders: SingletonList<BaseRender> = new SingletonList();
     constructor() {
@@ -17,6 +19,14 @@ export class SceneRenderManagerOBJ implements ISceneRenderManager {
 
     set list(value) {
         this._renders = value;
+    }
+
+    get dict() {
+        return this._rendersWithCullingMask;
+    }
+
+    set dict(value){
+
     }
 
     addRenderObject(object: BaseRender): void {

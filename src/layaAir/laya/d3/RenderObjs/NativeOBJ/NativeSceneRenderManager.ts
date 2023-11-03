@@ -6,6 +6,8 @@ import { BaseRender } from "../../core/render/BaseRender";
 
 export class NativeSceneRenderManager implements ISceneRenderManager {
     /** @internal */
+    _rendersWithCullingMask: {[cullingMask:number]:SingletonList<BaseRender>} = {};
+    /** @internal */
     _renders: SingletonList<BaseRender> = new SingletonList();
     //自定义更新的Bounds渲染节点
     _customUpdateList: SingletonList<BaseRender> = new SingletonList();
@@ -28,6 +30,15 @@ export class NativeSceneRenderManager implements ISceneRenderManager {
         for (let i = 0, len = value.length; i < len; i++) {
             this.addRenderObject((value.elements[i] as BaseRender));
         }
+    }
+    
+
+    get dict() {
+        return this._rendersWithCullingMask;
+    }
+
+    set dict(value){
+
     }
 
     addRenderObject(object: BaseRender): void {
