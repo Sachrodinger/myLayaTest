@@ -78,7 +78,8 @@ export class BaseRenderQueue implements IRenderQueue {
 
         for (var i: number = 0, n = this.elements.length; i < n; i++) {
             // czh: TODO. try compile in batchAndUpdatePreAndSort->_renderUpdatePre
-            // elements[i].compileShader1(context)
+            // TODO
+            elements[i].compileShader1(context);
             elements[i]._render(this._context);
         }
 
