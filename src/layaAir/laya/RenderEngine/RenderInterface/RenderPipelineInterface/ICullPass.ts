@@ -10,6 +10,7 @@ import { IShadowCullInfo } from "./IShadowCullInfo";
 export interface ICullPass{
     cullList:SingletonList<BaseRender>;
     cullByCameraCullInfo(cameraCullInfo: ICameraCullInfo, renderManager: ISceneRenderManager):void;
+    cullByCameraCullInfoInRenderer(cameraCullInfo: ICameraCullInfo, renderManager: ISceneRenderManager):void;
     cullByShadowCullInfo(cullInfo: IShadowCullInfo, renderManager: ISceneRenderManager): void ;
     cullingSpotShadow(cameraCullInfo: ICameraCullInfo, renderManager: ISceneRenderManager): void;
 }

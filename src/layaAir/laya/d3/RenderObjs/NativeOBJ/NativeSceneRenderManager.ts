@@ -6,7 +6,7 @@ import { BaseRender } from "../../core/render/BaseRender";
 
 export class NativeSceneRenderManager implements ISceneRenderManager {
     /** @internal */
-    _rendersWithCullingMask: {[cullingMask:number]:SingletonList<BaseRender>} = {};
+    _rendersWithCullingMask: Map<number, SingletonList<BaseRender>> = new Map<number, SingletonList<BaseRender>>;
     /** @internal */
     _renders: SingletonList<BaseRender> = new SingletonList();
     //自定义更新的Bounds渲染节点
@@ -33,11 +33,11 @@ export class NativeSceneRenderManager implements ISceneRenderManager {
     }
     
 
-    get dict() {
+    get map() {
         return this._rendersWithCullingMask;
     }
 
-    set dict(value){
+    set map(value){
 
     }
 
