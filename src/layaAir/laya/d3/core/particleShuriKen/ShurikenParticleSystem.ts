@@ -312,6 +312,25 @@ export class ShurikenParticleSystem extends GeometryElement implements IClone {
     /**是否为性能模式,性能模式下会延迟粒子释放。*/
     isPerformanceMode: boolean = false;
 
+    /**一次循环的时长。*/
+    get singleDuration():number
+    {
+        if(this._emission.emissionRate > 0)
+        {
+            return this.duration + this._maxStartLifetime;
+        }
+        else if(this._emission._bursts.length > 0)
+        {
+            return this.startDelay + this._maxStartLifetime;
+        }
+        else
+        {
+            return this.duration;
+        }
+    }
+
+
+
     /**最大粒子数。*/
     get maxParticles(): number {
         return this._bufferMaxParticles - 1;
@@ -1426,6 +1445,9 @@ export class ShurikenParticleSystem extends GeometryElement implements IClone {
     protected _burst(fromTime: number, toTime: number): number {
         var totalEmitCount: number = 0;
         var bursts: Burst[] = this._emission._bursts;
+        if(!bursts){
+            return totalEmitCount;
+        }
         for (var n: number = bursts.length; this._burstsIndex < n; this._burstsIndex++) {//TODO:_burstsIndex问题
             var burst: Burst = bursts[this._burstsIndex];
             var burstTime: number = burst.time;
