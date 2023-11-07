@@ -192,6 +192,7 @@ export class Animator extends Component {
                 property = property[node.getPropertyByIndex(i)];
                 if (property instanceof Material) {
                     mat = true
+                    property = property.MaterialProperty[node.getPropertyByIndex(++i)];//zzw：无法直接用【】取到材质球的属性，只能用这个方法先取得MaterialProperty
                 }
                 if (!property)
                     break;
