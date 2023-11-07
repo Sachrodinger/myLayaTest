@@ -3,8 +3,6 @@ import { ICameraCullInfo } from "../../../RenderEngine/RenderInterface/RenderPip
 import { IRenderQueue } from "../../../RenderEngine/RenderInterface/RenderPipelineInterface/IRenderQueue";
 import { RenderQueueWithPipelineMode } from "../../../d3/RenderObjs/RenderObj/extension/RenderQueueWithPipelineMode";
 import { Camera, CameraClearFlags, CameraData, CameraEventFlags } from "../../../d3/core/Camera";
-import { Sprite3D } from "../../../d3/core/Sprite3D";
-import { Transform3D } from "../../../d3/core/Transform3D";
 import { RenderContext3D } from "../../../d3/core/render/RenderContext3D";
 import { RenderElement } from "../../../d3/core/render/RenderElement";
 import { CommandBuffer } from "../../../d3/core/render/command/CommandBuffer";
@@ -12,7 +10,6 @@ import { Scene3D } from "../../../d3/core/scene/Scene3D";
 import { FrustumCulling } from "../../../d3/graphics/FrustumCulling";
 import { Cluster } from "../../../d3/graphics/renderPath/Cluster";
 import { LayaGL } from "../../../layagl/LayaGL";
-import { Matrix4x4 } from "../../../maths/Matrix4x4";
 import { Vector3 } from "../../../maths/Vector3";
 import { RenderTexture } from "../../../resource/RenderTexture";
 import { Stat } from "../../../utils/Stat";
@@ -176,25 +173,9 @@ export abstract class RendererBase {
         //addQueue
         let list = scene._cullPass.cullList;
         let element = list.elements;
-        
-        let InvertCameraLoc :Matrix4x4 = new Matrix4x4();
-        this.currentCamera._transform.worldMatrix.invert(InvertCameraLoc);
-
-
         for (let i: number = 0, k: number = list.length; i < k; i++) {
             let render = element[i];
-           
-           
-            let relativePos :Vector3 = new Vector3();
-       
-            let trans :Transform3D;
-           trans = ( render.owner as Sprite3D).transform;
-           
-      
-           Vector3.transformV3ToV3( trans.position, InvertCameraLoc, relativePos);
-
-          render.distanceForSort = -relativePos.z;
-            // render.distanceForSort = Vector3.distance(render.bounds.getCenter(), cameraPos);//TODO:合并计算浪费,或者合并后取平均值
+            render.distanceForSort = Vector3.distance(render.bounds.getCenter(), cameraPos);//TODO:合并计算浪费,或者合并后取平均值
             var elements: RenderElement[] = render._renderElements;
             for (var j: number = 0, m: number = elements.length; j < m; j++)
                 elements[j]._updateInRenderer(this, context, context.customShader, context.replaceTag, this._excludeLightModes);
