@@ -69,7 +69,7 @@ export class QuickSort implements ISortPass {
 		var renderQueue: number = left._material.renderQueue - right._material.renderQueue;
 		if (renderQueue === 0) {
 			var sort: number = this.isTransparent ? right._baseRender._distanceForSort - left._baseRender._distanceForSort : left._baseRender._distanceForSort - right._baseRender._distanceForSort;
-			return sort + right._baseRender.sortingFudge - left._baseRender.sortingFudge;
+			return sort ;
 		} else {
 			return renderQueue;
 		}
