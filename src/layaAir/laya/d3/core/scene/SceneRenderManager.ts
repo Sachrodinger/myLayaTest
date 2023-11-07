@@ -28,12 +28,12 @@ export class SceneRenderManager {
         this._sceneManagerOBJ.list = value;
     }
 
-    get map():Map<number, SingletonList<BaseRender>>{
-        return this._sceneManagerOBJ.map;
+    get dict():{[cullingMask:number]:SingletonList<BaseRender>}{
+        return this._sceneManagerOBJ.dict;
     }
 
-    set map(value :Map<number, SingletonList<BaseRender>>){
-        this._sceneManagerOBJ.map = value;
+    set dict(value :{[cullingMask:number]:SingletonList<BaseRender>}){
+        this._sceneManagerOBJ.dict = value;
     }
 
     /**

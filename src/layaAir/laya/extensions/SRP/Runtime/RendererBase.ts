@@ -169,7 +169,7 @@ export abstract class RendererBase {
         this.clearRenderQueueWithPipelineMode();
         var cameraCullInfo: ICameraCullInfo = this._makeCameraCullingInfo(this.currentCamera);
         var cameraPos = cameraCullInfo.position = this.currentCamera._transform.position;
-        scene._cullPass.cullByCameraCullInfoInRenderer(cameraCullInfo, scene.sceneRenderableManager);
+        scene._cullPass.cullByCameraCullInfo(cameraCullInfo, scene.sceneRenderableManager);
         //addQueue
         let list = scene._cullPass.cullList;
         let element = list.elements;

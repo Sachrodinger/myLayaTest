@@ -25,9 +25,6 @@ export class NativeCullPassBase implements ICullPass {
         this._nativeObj = new (window as any).conchCullPass();
         this._tempRenderList = new SingletonList<BaseRender>();
     }
-    cullByCameraCullInfoInRenderer(cameraCullInfo: ICameraCullInfo, renderManager: ISceneRenderManager): void {
-       this.cullByCameraCullInfo(cameraCullInfo,renderManager)
-    }
 
     cullByCameraCullInfo(cameraCullInfo: ICameraCullInfo, renderManager: ISceneRenderManager): void {
         //native Cull 

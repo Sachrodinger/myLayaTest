@@ -5,7 +5,7 @@ import { BaseRender } from "../../core/render/BaseRender";
 
 export class SceneRenderManagerOBJ implements ISceneRenderManager {
     /** @internal */
-    _rendersWithCullingMask: Map<number, SingletonList<BaseRender>> = new Map<number, SingletonList<BaseRender>>();
+    _rendersWithCullingMask: {[cullingMask:number]:SingletonList<BaseRender>} = {};
     /** @internal */
     _renders: SingletonList<BaseRender> = new SingletonList();
     _motionRenders: SingletonList<BaseRender> = new SingletonList();
@@ -21,26 +21,19 @@ export class SceneRenderManagerOBJ implements ISceneRenderManager {
         this._renders = value;
     }
 
-    get map() {
+    get dict() {
         return this._rendersWithCullingMask;
     }
 
-    set map(value){
+    set dict(value){
 
     }
 
     addRenderObject(object: BaseRender): void {
-        // this._renders.add(object);
-        if(!this._rendersWithCullingMask.has(object.renderNode.layer)){
-            this._rendersWithCullingMask.set(object.renderNode.layer,new SingletonList<BaseRender>)
-        }
-        this._rendersWithCullingMask.get(object.renderNode.layer).add(object);
+        this._renders.add(object);
     }
     removeRenderObject(object: BaseRender): void {
-        // this._renders.remove(object);
-        if(this._rendersWithCullingMask.has(object.renderNode.layer)){
-            this._rendersWithCullingMask.get(object.renderNode.layer).remove(object);
-        }
+        this._renders.remove(object);
         this.removeMotionObject(object);
     }
 
