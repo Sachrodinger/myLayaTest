@@ -70,8 +70,6 @@ import { Vector3 } from "../../../maths/Vector3";
 import { Vector4 } from "../../../maths/Vector4";
 import { BufferState } from "../../../webgl/utils/BufferState";
 import { RenderTexture } from "../../../resource/RenderTexture";
-import { Matrix4x4 } from "../../../maths/Matrix4x4";
-import { Transform3D } from "../Transform3D";
 
 export enum FogMode {
     Linear = 0, //Linear
@@ -1150,26 +1148,10 @@ export class Scene3D extends Sprite implements ISubmit {
         //addQueue
         let list = this._cullPass.cullList;
         let element = list.elements;
-
-        let InvertCameraLoc :Matrix4x4 = new Matrix4x4();
-        camera.transform.worldMatrix.invert(InvertCameraLoc);
-       
-
         for (let i: number = 0; i < list.length; i++) {
             let render = element[i];
-         //   render.distanceForSort = Vector3.distance(render.bounds.getCenter(), cameraPos);//TODO:合并计算浪费,或者合并后取平均值
-           
-         let relativePos :Vector3 = new Vector3();
-       
-         let trans :Transform3D;
-        trans = ( render.owner as Sprite3D).transform;
-        
-   
-        Vector3.transformV3ToV3( trans.position, InvertCameraLoc, relativePos);
-
-       render.distanceForSort = -relativePos.z;
-         
-         var elements: RenderElement[] = render._renderElements;
+            render.distanceForSort = Vector3.distance(render.bounds.getCenter(), cameraPos);//TODO:合并计算浪费,或者合并后取平均值
+            var elements: RenderElement[] = render._renderElements;
             for (var j: number = 0, m: number = elements.length; j < m; j++)
                 elements[j]._update(this, context, context.customShader, context.replaceTag);
         }
