@@ -17,7 +17,6 @@ export class HierarchyParser {
         let dataList: Array<any> = [];
         let allNodes: Array<Node> = [];
         let outNodes: Array<Node> = [];
-        let prefabIndexs: Record<string, number[]> = {};
         let scene: Scene;
 
         let inPrefab: boolean;
@@ -34,7 +33,6 @@ export class HierarchyParser {
         }
 
         function createChildren(data: any, prefab: Node) {
-            let tmpArray: Array<number> = [];
             for (let child of data._$child) {
                 if (child._$child) {
                     let node = createNode(child, prefab);
@@ -48,13 +46,7 @@ export class HierarchyParser {
                     dataList.push(child);
                     allNodes.push(node);
                 }
-                if(child._$id){
-                    tmpArray.push(dataList.length - 1)
-                }else{
-                    tmpArray.push(0)
-                }
             }
-            prefabIndexs[data._$id] = tmpArray
         }
 
         function createNode(nodeData: any, prefab: Node, runtime?: any): Node {
@@ -218,6 +210,7 @@ export class HierarchyParser {
 
         //生成树
         let k = 0;
+        let outNodeData: Array<any> = [];
         for (let i = 0; i < cnt; i++) {
             let nodeData = dataList[i];
             let node = allNodes[i];
@@ -227,13 +220,11 @@ export class HierarchyParser {
                 let num = children.length;
                 if (node) {
                     if (nodeData._$prefab) {
-                        let indexsArray = prefabIndexs[nodeData._$id]
                         for (let j = 0; j < num; j++) {
                             let m = k - num + j;
                             let n = outNodes[m];
                             if (n && !n.parent) { //是预制体新增
-                                let realIndex = indexsArray ? indexsArray[j] : i - num + j;
-                                let nodeData2 = dataList[realIndex];
+                                let nodeData2 = outNodeData[m];
                                 let parentNode = findNodeInPrefab(node, nodeData2._$parent);
                                 if (parentNode) {
                                     let pos = nodeData2._$index;
@@ -265,6 +256,7 @@ export class HierarchyParser {
             }
 
             outNodes[k] = node;
+            outNodeData[k] = nodeData;
             k++;
         }
         outNodes.length = k;
