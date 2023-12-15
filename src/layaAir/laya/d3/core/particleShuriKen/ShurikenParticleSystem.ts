@@ -312,6 +312,25 @@ export class ShurikenParticleSystem extends GeometryElement implements IClone {
     /**是否为性能模式,性能模式下会延迟粒子释放。*/
     isPerformanceMode: boolean = false;
 
+    /**一次循环的时长。*/
+    get singleDuration():number
+    {
+        if(this._emission.emissionRate > 0)
+        {
+            return this.duration + this._maxStartLifetime;
+        }
+        else if(this._emission._bursts.length > 0)
+        {
+            return this.startDelay + this._maxStartLifetime;
+        }
+        else
+        {
+            return this.duration;
+        }
+    }
+
+
+
     /**最大粒子数。*/
     get maxParticles(): number {
         return this._bufferMaxParticles - 1;
@@ -1158,8 +1177,11 @@ export class ShurikenParticleSystem extends GeometryElement implements IClone {
                 meshSize = ShurikenParticleSystem.halfKSqrtOf2;// Math.sqrt(2) / 2.0;
                 break;
             case 4: // mesh
-                var meshBounds: Bounds = particleRender.mesh.bounds;
-                meshSize = Math.sqrt(Math.pow(meshBounds.getExtent().x, 2.0) + Math.pow(meshBounds.getExtent().y, 2.0) + Math.pow(meshBounds.getExtent().z, 2.0));
+                if(particleRender.mesh!=null)
+                {
+                    var meshBounds: Bounds = particleRender.mesh.bounds;
+                    meshSize = Math.sqrt(Math.pow(meshBounds.getExtent().x, 2.0) + Math.pow(meshBounds.getExtent().y, 2.0) + Math.pow(meshBounds.getExtent().z, 2.0));
+                }
                 break;
             default:
                 break;
@@ -1426,6 +1448,9 @@ export class ShurikenParticleSystem extends GeometryElement implements IClone {
     protected _burst(fromTime: number, toTime: number): number {
         var totalEmitCount: number = 0;
         var bursts: Burst[] = this._emission._bursts;
+        if(!bursts){
+            return totalEmitCount;
+        }
         for (var n: number = bursts.length; this._burstsIndex < n; this._burstsIndex++) {//TODO:_burstsIndex问题
             var burst: Burst = bursts[this._burstsIndex];
             var burstTime: number = burst.time;
@@ -1699,7 +1724,7 @@ export class ShurikenParticleSystem extends GeometryElement implements IClone {
     /**
      * 发射一个粒子。
      */
-    emit(time: number): boolean {
+    emit(time: number,optimize : boolean = true): boolean {//添加一个是否优化开关，默认开
         var position: Vector3 = ShurikenParticleSystem._tempPosition;
         var direction: Vector3 = ShurikenParticleSystem._tempDirection;
         if (this._shape && this._shape.enable) {
@@ -1713,11 +1738,11 @@ export class ShurikenParticleSystem extends GeometryElement implements IClone {
             direction.z = 1;
         }
 
-        return this.addParticle(position, direction, time);//TODO:提前判断优化
+        return this.addParticle(position, direction, time, optimize);//TODO:提前判断优化
     }
 
     //增加一个粒子
-    addParticle(position: Vector3, direction: Vector3, time: number): boolean {//TODO:还需优化
+    addParticle(position: Vector3, direction: Vector3, time: number, optimize : boolean = true): boolean {//TODO:还需优化  //添加一个是否优化开关，默认开
         Vector3.normalize(direction, direction);
         //下一个粒子
         var nextFreeParticle: number = this._firstFreeElement + 1;
@@ -1730,10 +1755,13 @@ export class ShurikenParticleSystem extends GeometryElement implements IClone {
         var transform: Transform3D = this._owner.transform;
         ShurikenParticleData.create(this, this._ownerRender);
 
-        var particleAge: number = this._currentTime - time;
-        if (particleAge >= ShurikenParticleData.startLifeTime)//如果时间已大于声明周期，则直接跳过,TODO:提前优化
+        if(optimize)
+        {
+            var particleAge: number = this._currentTime - time;
+            if (particleAge >= ShurikenParticleData.startLifeTime)//如果时间已大于声明周期，则直接跳过,TODO:提前优化
             return true;
-
+        }
+        
         var pos: Vector3, rot: Quaternion;
         if (this.simulationSpace == 0) {
             pos = transform.position;
@@ -2115,6 +2143,221 @@ export class ShurikenParticleSystem extends GeometryElement implements IClone {
 
         this.pause();
     }
+
+    //zzw:新增
+    //给定时间模拟播放函数
+    /**
+     * 通过指定时间模拟粒子系统状态，并暂停播放。
+     * @param time 粒子系统运行时间。
+     */
+    simulateCurrentTime(time : number) : void
+    {
+        //如果渲染模式为网格，缺少网格时直接跳过
+        if (this._ownerRender.renderMode === 4 && !this._ownerRender.mesh)
+            return;
+        //设置初始状态
+        this.autoRandomSeed = false;                       //自动随机不可用,会导致没个给定时间点得到的状态都是不同的随机，得使用伪随机（随机种子）
+        this._isEmitting = true;
+        this._isPlaying = true;
+        this._simulateUpdate = true;
+        this._isPaused = false;
+        this._owner.transform.position.cloneTo(this._emissionLastPosition);
+        for (var i = 0, n = this._randomSeeds.length; i < n; i++)
+            this._randomSeeds[i] = this.randomSeed[0] + ShurikenParticleSystem._RANDOMOFFSET[i];
+        switch (this.startDelayType) 
+        {
+            case 0:
+                this._playStartDelay = this.startDelay;
+                break;
+            case 1:
+                this._rand.seed = this._randomSeeds[2];
+                this._playStartDelay = MathUtil.lerp(this.startDelayMin, this.startDelayMax, this._rand.getFloat());
+                this._randomSeeds[2] = this._rand.seed;
+                break;
+            default:
+                throw new Error("Utils3D: startDelayType is invalid.");
+        }
+        //设置初始数据
+        this._frameRateTime = this._playStartDelay;
+        this._startUpdateLoopCount = Stat.loopCount;
+        this._firstActiveElement = 0;
+        this._firstNewElement = 0;
+        this._firstFreeElement = 0;  
+        this._firstRetiredElement = 0;
+        this._burstsIndex = 0;
+        this._emissionTime = 0;
+        this._emissionDistance = 0;
+        this._totalDelayTime = 0;
+        this._currentTime = time;
+        var delayTime = time;
+        if (delayTime < this._playStartDelay) 
+        {
+            this._totalDelayTime += delayTime;
+            return;
+        }
+        //根据时间生成粒子
+        if (this._emission.enable && this._isEmitting) 
+        {
+            // this._advanceTime(time, time);改
+            //bursts
+            var i: number;
+            this._emissionTime += time;
+            var bursts = this._emission._bursts;
+            if (this._emissionTime > this.duration) 
+            {
+                if (this.looping) 
+                {
+                    var burstCountt = this._playStartDelay;
+                    while(burstCountt < this._emissionTime)
+                    {
+                        for (var n = bursts.length,nc = 0; nc < n; nc++) 
+                        {
+                            var burst = bursts[nc];
+                            var BurstTime = burst.time + burstCountt;
+                            // console.log("BurstTime" + BurstTime  + "   nc:" + nc);
+                            var emitCount;
+                            if (this.autoRandomSeed) 
+                            {
+                                emitCount = MathUtil.lerp(burst.minCount, burst.maxCount, Math.random());
+                            }
+                            else 
+                            {
+                                this._rand.seed = this._randomSeeds[0];
+                                emitCount = MathUtil.lerp(burst.minCount, burst.maxCount, this._rand.getFloat());
+                                this._randomSeeds[0] = this._rand.seed;
+                            }
+                            for (i = 0; i < emitCount; i++)
+                            {
+                                var abandonFirstFreeElement = this._firstFreeElement;
+                                this.emit(BurstTime,false);
+                                if(BurstTime + this._maxStartLifetime < this._emissionTime || BurstTime > this._emissionTime)
+                                {
+                                    this._firstFreeElement = abandonFirstFreeElement;
+                                }
+                            }
+                        }
+                        burstCountt = burstCountt + this.duration;
+                        // console.log("burstCountt" + burstCountt);
+                    }
+                }
+                else 
+                {
+                    for (var n = bursts.length; this._burstsIndex < n; this._burstsIndex++) 
+                    {
+                        var burst = bursts[this._burstsIndex];
+                        var burstTime = burst.time + this._playStartDelay;
+                        if ( burstTime < this.duration && burstTime < this._emissionTime) 
+                        {
+                            var emitCount;
+                            if (this.autoRandomSeed) 
+                            {
+                                emitCount = MathUtil.lerp(burst.minCount, burst.maxCount, Math.random());
+                            }
+                            else 
+                            {
+                                this._rand.seed = this._randomSeeds[0];
+                                emitCount = MathUtil.lerp(burst.minCount, burst.maxCount, this._rand.getFloat());
+                                this._randomSeeds[0] = this._rand.seed;
+                            }
+                            for (i = 0; i < emitCount; i++)
+                            {
+                                var abandonFirstFreeElement = this._firstFreeElement;
+                                this.emit(burstTime,false);
+                                if(burstTime + this._maxStartLifetime < this._emissionTime)
+                                {
+                                    this._firstFreeElement = abandonFirstFreeElement;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                for (var n = bursts.length; this._burstsIndex < n; this._burstsIndex++) 
+                {
+                    var burst = bursts[this._burstsIndex];
+                    var burstTime = burst.time + this._playStartDelay;
+                    if ( burstTime < this._emissionTime) 
+                    {
+                        var emitCount;
+                        if (this.autoRandomSeed) 
+                        {
+                            emitCount = MathUtil.lerp(burst.minCount, burst.maxCount, Math.random());
+                        }
+                        else 
+                        {
+                            this._rand.seed = this._randomSeeds[0];
+                            emitCount = MathUtil.lerp(burst.minCount, burst.maxCount, this._rand.getFloat());
+                            this._randomSeeds[0] = this._rand.seed;
+                        }
+                        for (i = 0; i < emitCount; i++)
+                        {
+                            var abandonFirstFreeElement = this._firstFreeElement;
+                                this.emit(burstTime,false);
+                                if(burstTime + this._maxStartLifetime < this._emissionTime)
+                                {
+                                    this._firstFreeElement = abandonFirstFreeElement;
+                                }
+                        }
+                    }
+                    //源码是如果第一个爆发粒子时间不符合就直接跳过，这样的话如果后续粒子爆发时间小于第一个就无法触发
+                    //所以粒子系统的bursts设置中，时间必须按顺序来
+                    else 
+                    {
+                        break;
+                    }
+                }
+            }
+
+            //EmissOverTime
+            var emissionRate = this.emission.emissionRate;
+            if (emissionRate > 0) 
+            {
+                var minEmissionTime = 1 / emissionRate;
+                this._frameRateTime += minEmissionTime;
+                if (!this.looping) 
+                {
+                    while (this._frameRateTime <= time && this._frameRateTime <= this.duration) 
+                    {
+                        var abandonFirstFreeElement = this._firstFreeElement;
+                        if (this.emit(this._frameRateTime , false))
+                        {
+                            if(this._frameRateTime + this._maxStartLifetime < time)
+                            {
+                                this._firstFreeElement = abandonFirstFreeElement;
+                            }
+                            this._frameRateTime += minEmissionTime;
+                        }
+                        else
+                            break;
+                    }
+                }
+                else
+                {
+                    while (this._frameRateTime <= time) 
+                    {
+                        var abandonFirstFreeElement = this._firstFreeElement;
+                        if (this.emit(this._frameRateTime,false))
+                        {
+                            if(this._frameRateTime + this._maxStartLifetime < time)
+                            {
+                                this._firstFreeElement = abandonFirstFreeElement;
+                            }
+                            this._frameRateTime += minEmissionTime;
+                        }
+                        else
+                            break;
+                    }
+                }
+                
+            }
+        }
+        // this._retireActiveParticles();
+        // this._freeRetiredParticles();
+
+        // this.pause();
+}
 
     /**
      * 停止发射粒子。

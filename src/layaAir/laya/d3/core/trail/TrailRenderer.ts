@@ -141,7 +141,8 @@ export class TrailRenderer extends BaseRender {
     protected _onEnable(): void {
         super._onEnable();
 
-        (this.owner as Sprite3D)._transform.position.cloneTo(this._trailFilter._lastPosition);//激活时需要重置上次位置
+        this.clear();
+        //(this.owner as Sprite3D)._transform.position.cloneTo(this._trailFilter._lastPosition);//激活时需要重置上次位置
     }
 
     onUpdate(): void {

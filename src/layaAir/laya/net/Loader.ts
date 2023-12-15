@@ -19,6 +19,7 @@ import { AssetDb } from "../resource/AssetDb";
 import { BaseTexture } from "../resource/BaseTexture";
 import { LayaEnv } from "../../LayaEnv";
 import { XML } from "../html/XML";
+import { BundleInfoManager } from "./BundleInfoManager";
 
 export interface ILoadTask {
     readonly type: string;
@@ -358,6 +359,14 @@ export class Loader extends EventDispatcher {
             return new Promise((resolve) => task.onComplete.add(resolve));
         }
 
+        //判断是否在bundle里面
+        let bundleInfo = BundleInfoManager.getFileLoadPath(formattedUrl)
+        if (bundleInfo) {
+            return this.load(bundleInfo.bundleName, Loader.BUFFER).then(() => {
+                return Loader.getRes(url, type);
+            });
+        }
+
         //判断是否在自动图集里
         let atlasInfo = AtlasInfoManager.getFileLoadPath(formattedUrl);
         if (atlasInfo) {
@@ -638,32 +647,48 @@ export class Loader extends EventDispatcher {
 
     private static _getRes(url: string, type?: string): any {
         let resArr = Loader.loadedMap[url];
-        if (!resArr)
-            return undefined;
-
         let ret: any;
-        if (type) {
-            let typeEntry = <TypeMapEntry>Loader.typeMap[type];
-            if (!typeEntry)
-                return undefined;
-
-            if (resArr.length == 2) { //优化，大部分情况都是只有主资源，也就是两个元素
-                if (resArr[0] == typeEntry.typeId)
-                    ret = resArr[1];
+        if (resArr)
+        {
+            if (type) {
+                let typeEntry = <TypeMapEntry>Loader.typeMap[type];
+                if (!typeEntry)
+                    return undefined;
+    
+                if (resArr.length == 2) { //优化，大部分情况都是只有主资源，也就是两个元素
+                    if (resArr[0] == typeEntry.typeId)
+                        ret = resArr[1];
+                }
+                else {
+                    let i = resArr.indexOf(typeEntry.typeId);
+                    if (i != -1)
+                        ret = resArr[i + 1];
+                }
             }
-            else {
-                let i = resArr.indexOf(typeEntry.typeId);
-                if (i != -1)
-                    ret = resArr[i + 1];
+            else
+                ret = resArr[1]; //主资源
+    
+            if ((ret instanceof Resource) && ret.destroyed)
+                return undefined;
+            else
+                return ret;
+        } else {
+            //判断是否在bundle里面
+            let data = BundleInfoManager.getFileLoadPath(url)
+            if (!data) {
+                return undefined
+            }
+            
+            let formatUrl = URL.formatURL(data.bundleName)
+            let resArr = Loader._getRes(formatUrl, Loader.BUFFER);
+            if (resArr) {
+                ret = resArr.GetRes(data);
+                Loader.cacheRes(url, ret, data.type[0])
+                return ret
+            } else {
+                return undefined;
             }
         }
-        else
-            ret = resArr[1]; //主资源
-
-        if ((ret instanceof Resource) && ret.destroyed)
-            return undefined;
-        else
-            return ret;
     }
 
     /**

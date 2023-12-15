@@ -20,17 +20,17 @@ uniform int u_VOLSpaceType;
 uniform vec3 u_VOLVelocityConst;
 #endif
 #if defined(VELOCITYOVERLIFETIMECURVE) || defined(VELOCITYOVERLIFETIMERANDOMCURVE)
-uniform vec2 u_VOLVelocityGradientX[4]; // x为key,y为速度
-uniform vec2 u_VOLVelocityGradientY[4]; // x为key,y为速度
-uniform vec2 u_VOLVelocityGradientZ[4]; // x为key,y为速度
+uniform vec2 u_VOLVelocityGradientX[8]; // x为key,y为速度
+uniform vec2 u_VOLVelocityGradientY[8]; // x为key,y为速度
+uniform vec2 u_VOLVelocityGradientZ[8]; // x为key,y为速度
 #endif
 #ifdef VELOCITYOVERLIFETIMERANDOMCONSTANT
 uniform vec3 u_VOLVelocityConstMax;
 #endif
 #ifdef VELOCITYOVERLIFETIMERANDOMCURVE
-uniform vec2 u_VOLVelocityGradientMaxX[4]; // x为key,y为速度
-uniform vec2 u_VOLVelocityGradientMaxY[4]; // x为key,y为速度
-uniform vec2 u_VOLVelocityGradientMaxZ[4]; // x为key,y为速度
+uniform vec2 u_VOLVelocityGradientMaxX[8]; // x为key,y为速度
+uniform vec2 u_VOLVelocityGradientMaxY[8]; // x为key,y为速度
+uniform vec2 u_VOLVelocityGradientMaxZ[8]; // x为key,y为速度
 #endif
 
 #ifdef COLORKEYCOUNT_8
@@ -54,20 +54,20 @@ uniform vec4 u_MaxColorOverLifeGradientRanges;
 #endif
 
 #if defined(SIZEOVERLIFETIMECURVE) || defined(SIZEOVERLIFETIMERANDOMCURVES)
-uniform vec2 u_SOLSizeGradient[4]; // x为key,y为尺寸
+uniform vec2 u_SOLSizeGradient[8]; // x为key,y为尺寸
 #endif
 #ifdef SIZEOVERLIFETIMERANDOMCURVES
-uniform vec2 u_SOLSizeGradientMax[4]; // x为key,y为尺寸
+uniform vec2 u_SOLSizeGradientMax[8]; // x为key,y为尺寸
 #endif
 #if defined(SIZEOVERLIFETIMECURVESEPERATE) || defined(SIZEOVERLIFETIMERANDOMCURVESSEPERATE)
-uniform vec2 u_SOLSizeGradientX[4]; // x为key,y为尺寸
-uniform vec2 u_SOLSizeGradientY[4]; // x为key,y为尺寸
-uniform vec2 u_SOLSizeGradientZ[4]; // x为key,y为尺寸
+uniform vec2 u_SOLSizeGradientX[8]; // x为key,y为尺寸
+uniform vec2 u_SOLSizeGradientY[8]; // x为key,y为尺寸
+uniform vec2 u_SOLSizeGradientZ[8]; // x为key,y为尺寸
 #endif
 #ifdef SIZEOVERLIFETIMERANDOMCURVESSEPERATE
-uniform vec2 u_SOLSizeGradientMaxX[4]; // x为key,y为尺寸
-uniform vec2 u_SOLSizeGradientMaxY[4]; // x为key,y为尺寸
-uniform vec2 u_SOLSizeGradientMaxZ[4]; // x为key,y为尺寸
+uniform vec2 u_SOLSizeGradientMaxX[8]; // x为key,y为尺寸
+uniform vec2 u_SOLSizeGradientMaxY[8]; // x为key,y为尺寸
+uniform vec2 u_SOLSizeGradientMaxZ[8]; // x为key,y为尺寸
 #endif
 
 #ifdef ROTATIONOVERLIFETIME
@@ -78,10 +78,10 @@ uniform float u_ROLAngularVelocityConst;
 uniform float u_ROLAngularVelocityConstMax;
     #endif
     #if defined(ROTATIONOVERLIFETIMECURVE) || defined(ROTATIONOVERLIFETIMERANDOMCURVES)
-uniform vec2 u_ROLAngularVelocityGradient[4]; // x为key,y为旋转
+uniform vec2 u_ROLAngularVelocityGradient[8]; // x为key,y为旋转
     #endif
     #ifdef ROTATIONOVERLIFETIMERANDOMCURVES
-uniform vec2 u_ROLAngularVelocityGradientMax[4]; // x为key,y为旋转
+uniform vec2 u_ROLAngularVelocityGradientMax[8]; // x为key,y为旋转
     #endif
 #endif
 #ifdef ROTATIONOVERLIFETIMESEPERATE
@@ -92,23 +92,23 @@ uniform vec3 u_ROLAngularVelocityConstSeprarate;
 uniform vec3 u_ROLAngularVelocityConstMaxSeprarate;
     #endif
     #if defined(ROTATIONOVERLIFETIMECURVE) || defined(ROTATIONOVERLIFETIMERANDOMCURVES)
-uniform vec2 u_ROLAngularVelocityGradientX[4];
-uniform vec2 u_ROLAngularVelocityGradientY[4];
-uniform vec2 u_ROLAngularVelocityGradientZ[4];
+uniform vec2 u_ROLAngularVelocityGradientX[8];
+uniform vec2 u_ROLAngularVelocityGradientY[8];
+uniform vec2 u_ROLAngularVelocityGradientZ[8];
     #endif
     #ifdef ROTATIONOVERLIFETIMERANDOMCURVES
-uniform vec2 u_ROLAngularVelocityGradientMaxX[4];
-uniform vec2 u_ROLAngularVelocityGradientMaxY[4];
-uniform vec2 u_ROLAngularVelocityGradientMaxZ[4];
-uniform vec2 u_ROLAngularVelocityGradientMaxW[4];
+uniform vec2 u_ROLAngularVelocityGradientMaxX[8];
+uniform vec2 u_ROLAngularVelocityGradientMaxY[8];
+uniform vec2 u_ROLAngularVelocityGradientMaxZ[8];
+uniform vec2 u_ROLAngularVelocityGradientMaxW[8];
     #endif
 #endif
 
 #if defined(TEXTURESHEETANIMATIONCURVE) || defined(TEXTURESHEETANIMATIONRANDOMCURVE)
 uniform float u_TSACycles;
 uniform vec2 u_TSASubUVLength;
-uniform vec2 u_TSAGradientUVs[4]; // x为key,y为frame
+uniform vec2 u_TSAGradientUVs[8]; // x为key,y为frame
 #endif
 #ifdef TEXTURESHEETANIMATIONRANDOMCURVE
-uniform vec2 u_TSAMaxGradientUVs[4]; // x为key,y为frame
+uniform vec2 u_TSAMaxGradientUVs[8]; // x为key,y为frame
 #endif

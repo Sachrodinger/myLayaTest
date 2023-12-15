@@ -124,7 +124,6 @@ export class QuickTestTool {
 
     //TODO:coverage
     static showCountInfo(): void {
-        console.log("===================");
         var key: string;
         for (key in QuickTestTool._countDic) {
             console.log("count:" + QuickTestTool._countDic[key]);

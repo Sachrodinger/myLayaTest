@@ -61,6 +61,37 @@ export class BaseRenderQueue implements IRenderQueue {
         return n;
     }
 
+    batchAndUpdatePreAndSort(context: RenderContext3D) {
+        let elements: RenderElement[] = this.elements.elements;
+        this._batchQueue();
+        for (var i: number = 0, n = this.elements.length; i < n; i++) {
+            elements[i]._renderUpdatePre(context);//Update Data
+        }
+        this._sort();
+    }
+
+    renderQueueOnly(context: RenderContext3D): number {
+        this.context = context;
+        this._context.applyContext(Camera._updateMark);
+
+        var elements: RenderElement[] = this.elements.elements;
+
+        for (var i: number = 0, n = this.elements.length; i < n; i++) {
+            // czh: TODO. try compile in batchAndUpdatePreAndSort->_renderUpdatePre
+            // TODO
+            elements[i].compileShader1(context);
+            elements[i]._render(this._context);
+        }
+
+        BufferState._curBindedBufferState && BufferState._curBindedBufferState.unBind();
+        return n;
+    }
+
+
+    recoverData() {
+        this._batch.recoverData();
+    }
+
     private _batchQueue() {
         this._isTransparent || this._batch.batch(this.elements);
     }

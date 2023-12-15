@@ -29,6 +29,19 @@ export class NativeBaseRenderQueue implements IRenderQueue {
         this._nativeObj = new (window as any).conchRenderQueue(isTransparent);
  	    this._batch = RenderElementBatch.instance ? RenderElementBatch.instance : new RenderElementBatch();
     }
+
+    batchAndUpdatePreAndSort(context: RenderContext3D): void {
+        // TODO.
+        throw new Error("Method not implemented.");
+    }
+    renderQueueOnly(context: RenderContext3D): number {
+        // TODO.
+        throw new Error("Method not implemented.");
+    }
+    recoverData(): void {
+        // TODO.
+        throw new Error("Method not implemented.");
+    }
     destroy(): void {
         this._nativeObj.destroy();
     }

@@ -5,6 +5,7 @@ import { Viewport } from "../../../d3/math/Viewport";
 import { ShaderData } from "../../RenderShader/ShaderData";
 import { IRenderTarget } from "../IRenderTarget";
 import { IRenderContext3D } from "./IRenderContext3D";
+import { Render } from "../../../renders/Render";
 
 /**
  * RenderQueue,渲染队列
@@ -26,7 +27,12 @@ export interface IRenderQueue {
     //清除队列
     clear(): void
     //destroy
-    destroy():void;
+    destroy(): void;
+    
+    batchAndUpdatePreAndSort(context: RenderContext3D):void;
+    //渲染渲染队列
+    renderQueueOnly(context: RenderContext3D): number;
+    recoverData():void;
 
 
 }

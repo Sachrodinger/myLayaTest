@@ -45,6 +45,7 @@ const packsDef = [
             './layaAir/laya/utils/**/*.*',
             './layaAir/laya/html/**/*.*',
             './layaAir/laya/webgl/**/*.*',
+            './layaAir/laya/extensions/**/*.*',
             './layaAir/Config3D.ts',
 
 

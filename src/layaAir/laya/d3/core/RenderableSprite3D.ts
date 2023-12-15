@@ -72,6 +72,10 @@ export class RenderableSprite3D extends Sprite3D {
 	/** @internal */
 	static MorphActiveCount: number;
 
+	
+	///** @internal */
+	static CustomMainTex: number;
+
 	//--------------------------------------------------------deprecated------------------------------------------------------------------------
 	/**
 	 * @deprecated
@@ -119,7 +123,6 @@ export class RenderableSprite3D extends Sprite3D {
 	 */
 	static REFLECTIONCUBE_HDR_PARAMS: number;
 
-
 	/**
 	 * @internal
 	 */
@@ -154,6 +157,8 @@ export class RenderableSprite3D extends Sprite3D {
 		RenderableSprite3D.REFLECTIONINTENSITY = Shader3D.propertyNameToID("u_ReflectionIntensity");
 		RenderableSprite3D.IBLTEX = Shader3D.propertyNameToID("u_IBLTex");
 		RenderableSprite3D.IBLROUGHNESSLEVEL = Shader3D.propertyNameToID("u_IBLRoughnessLevel");
+
+		RenderableSprite3D.CustomMainTex = Shader3D.propertyNameToID("u_CustomMainTex");
 
 		const commandUniform = LayaGL.renderOBJCreate.createGlobalUniformMap("Sprite3D");
 
@@ -198,6 +203,9 @@ export class RenderableSprite3D extends Sprite3D {
 		commandUniform.addShaderUniform(RenderableSprite3D.AMBIENTCOLOR, "u_AmbientColor");
 		commandUniform.addShaderUniform(RenderableSprite3D.AMBIENTINTENSITY, "u_AmbientIntensity");
 		commandUniform.addShaderUniform(RenderableSprite3D.REFLECTIONINTENSITY, "u_ReflectionIntensity");
+
+		commandUniform.addShaderUniform(RenderableSprite3D.CustomMainTex, "u_CustomMainTex");
+
 
 		//Legency Reflectexture
 		RenderableSprite3D.REFLECTIONTEXTURE = Shader3D.propertyNameToID("u_ReflectTexture");

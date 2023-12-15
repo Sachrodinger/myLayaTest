@@ -192,6 +192,7 @@ export class Animator extends Component {
                 property = property[node.getPropertyByIndex(i)];
                 if (property instanceof Material) {
                     mat = true
+                    property = property.MaterialProperty[node.getPropertyByIndex(++i)];//zzw：无法直接用【】取到材质球的属性，只能用这个方法先取得MaterialProperty
                 }
                 if (!property)
                     break;
@@ -299,18 +300,10 @@ export class Animator extends Component {
         var playTime: number = normalizedTime % 1.0;
         playState._normalizedPlayTime = playTime < 0 ? playTime + 1.0 : playTime;
         playState._duration = clipDuration;
-        if (elapsedPlaybackTime >= clipDuration) {
-            if (!islooping) {
-                playState._finish = true;
-                playState._elapsedTime = clipDuration;
-                playState._normalizedPlayTime = 1.0;
-            } else {
-                let loopNum = Math.floor(elapsedPlaybackTime / clipDuration);
-                let pLoopNum = Math.floor(lastElapsedTime / clipDuration);
-                if (pLoopNum != loopNum) {
-                    animatorState._eventLoop();
-                }
-            }
+        if ((!islooping && elapsedPlaybackTime >= clipDuration)) {
+            playState._finish = true;
+            playState._elapsedTime = clipDuration;
+            playState._normalizedPlayTime = 1.0;
         }
 
         (!playState._finish) && animatorState._eventStateUpdate(playState._normalizedPlayTime);
