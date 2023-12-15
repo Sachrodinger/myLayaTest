@@ -54,8 +54,21 @@ export class BaseRenderQueue implements IRenderQueue {
         //更新所有大buffer数据 nativeTODO
 
         this._sort();
+        let firstCopy = true;
         for (var i: number = 0, n: number = this.elements.length; i < n; i++)
+        {
+            //将相机的不透明图片渲染移到这里
+            let currentRenderQuene = elements[i].material.renderQueue;
+            if(firstCopy && currentRenderQuene > 3499)
+            {
+                let currentCamera = context.camera;
+                currentCamera.opaquePass && currentCamera._createOpaqueTexture(currentCamera._getRenderTexture(),context);
+                context.destTarget = currentCamera._getRenderTexture();
+                this._context.applyContext(Camera._updateMark);
+                firstCopy = false;
+            }
             elements[i]._render(this._context);//Update Data
+        }
         BufferState._curBindedBufferState && BufferState._curBindedBufferState.unBind();
         this._batch.recoverData();
         return n;

@@ -27,12 +27,12 @@ export class ParticleShuriKenShaderInit{
 		 	'a_StartColor': [VertexShuriKenParticle.PARTICLE_STARTCOLOR0,ShaderDataType.Vector4],
 		 	'a_StartSize': [VertexShuriKenParticle.PARTICLE_STARTSIZE,ShaderDataType.Vector3],
 		 	'a_StartRotation0': [VertexShuriKenParticle.PARTICLE_STARTROTATION,ShaderDataType.Vector3],
-		 	'a_StartSpeed': [VertexShuriKenParticle.PARTICLE_STARTSPEED,ShaderDataType.Float],
+		 	'a_StartSpeed': [VertexShuriKenParticle.PARTICLE_STARTSPEED,ShaderDataType.Vector4],
 		 	'a_Random0': [VertexShuriKenParticle.PARTICLE_RANDOM0,ShaderDataType.Vector4],
 		 	'a_Random1': [VertexShuriKenParticle.PARTICLE_RANDOM1,ShaderDataType.Vector4],
 		 	'a_SimulationWorldPostion': [VertexShuriKenParticle.PARTICLE_SIMULATIONWORLDPOSTION,ShaderDataType.Vector3],
 		 	'a_SimulationWorldRotation': [VertexShuriKenParticle.PARTICLE_SIMULATIONWORLDROTATION,ShaderDataType.Vector4],
-		 	'a_SimulationUV': [VertexShuriKenParticle.PARTICLE_SIMULATIONUV,ShaderDataType.Vector4]
+		 	'a_SimulationUV': [VertexShuriKenParticle.PARTICLE_SIMULATIONUV,ShaderDataType.Vector4],
         };
 
         let uniformMap = {

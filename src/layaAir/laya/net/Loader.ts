@@ -19,7 +19,8 @@ import { AssetDb } from "../resource/AssetDb";
 import { BaseTexture } from "../resource/BaseTexture";
 import { LayaEnv } from "../../LayaEnv";
 import { XML } from "../html/XML";
-import { BundleInfoManager } from "./BundleInfoManager";
+import { ClassUtils } from "../utils/ClassUtils";
+import { loader } from "../../Laya";
 
 export interface ILoadTask {
     readonly type: string;
@@ -73,7 +74,6 @@ interface URLInfo {
     loaderType: new () => IResourceLoader,
 }
 const NullURLInfo: Readonly<URLInfo> = { ext: null, typeId: null, main: false, loaderType: null };
-
 /**
  * <code>Loader</code> 类可用来加载文本、JSON、XML、二进制、图像等资源。
  */
@@ -358,15 +358,7 @@ export class Loader extends EventDispatcher {
                 task.onProgress.add(onProgress);
             return new Promise((resolve) => task.onComplete.add(resolve));
         }
-
-        //判断是否在bundle里面
-        let bundleInfo = BundleInfoManager.getFileLoadPath(formattedUrl)
-        if (bundleInfo) {
-            return this.load(bundleInfo.bundleName, Loader.BUFFER).then(() => {
-                return Loader.getRes(url, type);
-            });
-        }
-
+       
         //判断是否在自动图集里
         let atlasInfo = AtlasInfoManager.getFileLoadPath(formattedUrl);
         if (atlasInfo) {
@@ -375,7 +367,7 @@ export class Loader extends EventDispatcher {
             });
         }
 
-        if (loadTaskPool.length > 0)
+         if (loadTaskPool.length > 0)
             task = loadTaskPool.pop();
         else
             task = new LoadTask();
@@ -436,6 +428,40 @@ export class Loader extends EventDispatcher {
                 this.event(Event.COMPLETE);
             return result;
         });
+    }
+
+    static GetBundleData(task:ILoadTask, url:string, isString = true):Promise<any>{
+        //url = URL.formatURL(url);
+        let bundleInfo = ClassUtils.getClass("BundleInfoManager")?.getFileLoadPath(url)
+        if(bundleInfo){
+            let fetchType = Loader.TEXT
+            //1二进制，2纯文本，不压缩
+            if (bundleInfo.t == 1){
+                fetchType = Loader.BUFFER
+            }
+            return task.loader.load(bundleInfo.bundleName, fetchType).then((data:any) => {
+                    if (!data){
+                        console.error("bundle load error", url, bundleInfo.bundleName);
+                        return Promise.resolve(null);
+                    }
+                    let bundleData = data.GetData(bundleInfo, bundleInfo.t)
+                    let ret = bundleData
+                    if (isString && bundleInfo.t == 1){
+                        const blockSize = 2048; // 块大小，
+
+                        const blocks = [];
+                        for (let i = 0; i < bundleData.length; i += blockSize) {
+                            const block = bundleData.subarray(i, i + blockSize);
+                            const str = String.fromCharCode.apply(null, block);
+                            blocks.push(str);
+                        }
+
+                        ret = decodeURIComponent(escape(blocks.join('')));
+                    }
+                    return Promise.resolve(ret);   
+                });
+        }
+        return Promise.resolve(null)
     }
 
     /**
@@ -672,22 +698,6 @@ export class Loader extends EventDispatcher {
                 return undefined;
             else
                 return ret;
-        } else {
-            //判断是否在bundle里面
-            let data = BundleInfoManager.getFileLoadPath(url)
-            if (!data) {
-                return undefined
-            }
-            
-            let formatUrl = URL.formatURL(data.bundleName)
-            let resArr = Loader._getRes(formatUrl, Loader.BUFFER);
-            if (resArr) {
-                ret = resArr.GetRes(data);
-                Loader.cacheRes(url, ret, data.type[0])
-                return ret
-            } else {
-                return undefined;
-            }
         }
     }
 
@@ -996,85 +1006,109 @@ export class Loader extends EventDispatcher {
     private _loadSubFileConfig(path: string, onProgress: ProgressCallback): Promise<any> {
         if (path.length > 0)
             path += "/";
+        let code_version = ClassUtils.getClass("EnvConfig")?.code_version;
+        if (!code_version){
+            console.warn("code_version is null");
+            return Promise.resolve(null);
+        }
 
-        return this.fetch(path + "fileconfig.json", "json", onProgress).then(fileConfig => {
-            let files: Array<string> = [];
-            let col = fileConfig.files;
-            for (let k in col) {
-                if (k.length > 0) {
-                    for (let file of col[k])
-                        files.push(k + "/" + file);
-                }
-                else {
-                    for (let file of col[k])
-                        files.push(file);
-                }
+        let versionName = "version-" + code_version + ".json"
+        console.log("versionName", versionName);
+        return this.fetch(path + versionName, "json", onProgress).then(version => {
+            if (!version) {
+                console.warn("version is null");
+                return Promise.resolve(null);
             }
-
-            if (fileConfig.hash) {
-                let i = 0;
-                let version = URL.version;
-                for (let k of fileConfig.hash) {
-                    if (k != null)
-                        version[files[i]] = k;
-                    i++;
-                }
+            let fileConfigName = version.fileConfigPath;
+            if (!fileConfigName) {
+                console.warn("fileConfigName is null");
+                return Promise.resolve(null);
             }
-
-            let configs: Array<any> = fileConfig.config;
-            let len = configs.length;
-            let i = 0, j = 0, m = 0, k = 0, n = 0;
-            let indice: Array<number>;
-            let c: any;
-            let metaMap = AssetDb.inst.metaMap;
-            while (true) {
-                if (indice == null) {
-                    if (i >= len)
-                        break;
-                    c = configs[i];
-                    indice = c.i;
-                    if (Array.isArray(indice))
-                        n = indice.length;
+            console.log("fileConfigName", fileConfigName);
+            return this.fetch(path + fileConfigName, "json", onProgress).then(fileConfig => {
+                let bundle = fileConfig.bundle;
+                if (bundle){
+                    console.log("bundle init");
+                    ClassUtils.getClass("BundleInfoManager")?.addMap(bundle);
+                }
+                let files: Array<string> = [];
+                let col = fileConfig.files;
+                for (let k in col) {
+                    if (k.length > 0) {
+                        for (let file of col[k])
+                            files.push(k + "/" + file);
+                    }
                     else {
-                        m = indice;
-                        n = 0;
-                        k = 1;
+                        for (let file of col[k])
+                            files.push(file);
                     }
-                    j = 0;
                 }
-                if (k == 0) {
-                    if (j >= n) {
+    
+                if (fileConfig.hash) {
+                    let i = 0;
+                    let version = URL.version;
+                    for (let k of fileConfig.hash) {
+                        if (k != null)
+                            version[files[i]] = k;
                         i++;
-                        indice = null;
-                        continue;
                     }
-                    k = indice[j++];
-                    if (k > 0) {
-                        m = k;
-                        k = 0;
+                }
+    
+                let configs: Array<any> = fileConfig.config;
+                let len = configs.length;
+                let i = 0, j = 0, m = 0, k = 0, n = 0;
+                let indice: Array<number>;
+                let c: any;
+                let metaMap = AssetDb.inst.metaMap;
+                while (true) {
+                    if (indice == null) {
+                        if (i >= len)
+                            break;
+                        c = configs[i];
+                        indice = c.i;
+                        if (Array.isArray(indice))
+                            n = indice.length;
+                        else {
+                            m = indice;
+                            n = 0;
+                            k = 1;
+                        }
+                        j = 0;
+                    }
+                    if (k == 0) {
+                        if (j >= n) {
+                            i++;
+                            indice = null;
+                            continue;
+                        }
+                        k = indice[j++];
+                        if (k > 0) {
+                            m = k;
+                            k = 0;
+                        }
+                        else
+                            k = -k;
                     }
                     else
-                        k = -k;
+                        k--;
+    
+                    let file = files[m + k];
+                    switch (c.t) {
+                        case 0: //图片
+                            metaMap[file] = c;
+                            break;
+                        case 1: //自动图集
+                            AtlasInfoManager.addAtlas(file, c.prefix, c.frames);
+                            break;
+                        case 2: //Shader
+                            AssetDb.inst.shaderNameMap[c.shaderName] = file;
+                            break;
+                        case 3: //render texture
+                            Loader.preLoadedMap[URL.formatURL(file)] = c;
+                            break;
+                    }
                 }
-                else
-                    k--;
-
-                let file = files[m + k];
-                switch (c.t) {
-                    case 0: //图片
-                        metaMap[file] = c;
-                        break;
-                    case 1: //自动图集
-                        AtlasInfoManager.addAtlas(file, c.prefix, c.frames);
-                        break;
-                    case 2: //Shader
-                        AssetDb.inst.shaderNameMap[c.shaderName] = file;
-                        break;
-                    case 3: //render texture
-                        Loader.preLoadedMap[URL.formatURL(file)] = c;
-                        break;
-                }
-            }
+            });
         });
     }
 }

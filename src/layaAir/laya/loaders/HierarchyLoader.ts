@@ -16,19 +16,29 @@ export class HierarchyLoader implements IResourceLoader {
         let isModel = task.ext == "gltf" || task.ext == "fbx" || task.ext == "glb";
         if (isModel)
             url = AssetDb.inst.getSubAssetURL(url, task.uuid, "0", "lh");
-        return task.loader.fetch(url, "json", task.progress.createCallback(0.2), task.options).then(data => {
-            if (!data)
-                return null;
 
-            if (data._$ver != null)
-                return this._load(HierarchyLoader.v3, task, data, 3);
-            else if (task.ext == "ls" || task.ext == "lh")
-                return this._load(HierarchyLoader.v2, task, data, 2);
-            else if (task.ext == "scene" || task.ext == "prefab")
-                return this._load(HierarchyLoader.legacySceneOrPrefab, task, data, 2);
-            else
-                return null;
-        });
+        return Loader.GetBundleData(task, task.url).then(bundleData=>{
+            let p:Promise<any>;
+            if (bundleData){
+                p = Promise.resolve(JSON.parse(bundleData));
+            }
+            else {
+                p = task.loader.fetch(url, "json", task.progress.createCallback(0.2), task.options); 
+            }
+            return p.then(data => {
+                if (!data)
+                    return null;
+    
+                if (data._$ver != null)
+                    return this._load(HierarchyLoader.v3, task, data, 3);
+                else if (task.ext == "ls" || task.ext == "lh")
+                    return this._load(HierarchyLoader.v2, task, data, 2);
+                else if (task.ext == "scene" || task.ext == "prefab")
+                    return this._load(HierarchyLoader.legacySceneOrPrefab, task, data, 2);
+                else
+                    return null;
+            });
+        });        
     }
 
     //@internal

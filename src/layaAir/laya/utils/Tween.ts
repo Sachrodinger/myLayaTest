@@ -129,7 +129,7 @@ export class Tween {
             if (delay <= 0) this.firstStart(target, props, isTo);
             else {
                 this._delayParam = [target, props, isTo];
-                ILaya.timer.once(delay, this, this.firstStart, this._delayParam);
+                ILaya.systemTimer.once(delay, this, this.firstStart, this._delayParam);
             }
         } else {
             this._initProps(target, props, isTo);
@@ -160,7 +160,7 @@ export class Tween {
     }
 
     private _beginLoop(): void {
-        ILaya.timer.frameLoop(1, this, this._doEase);
+        ILaya.systemTimer.frameLoop(1, this, this._doEase);
     }
 
     /**执行缓动**/
@@ -202,7 +202,7 @@ export class Tween {
         if (!this._target) return;
 
         //立即执行初始化
-        ILaya.timer.runTimer(this, this.firstStart);
+        ILaya.systemTimer.runTimer(this, this.firstStart);
 
         //缓存当前属性
         var target: any = this._target;
@@ -230,9 +230,9 @@ export class Tween {
      * 暂停缓动，可以通过resume或restart重新开始。
      */
     pause(): void {
-        ILaya.timer.clear(this, this._beginLoop);
-        ILaya.timer.clear(this, this._doEase);
-        ILaya.timer.clear(this, this.firstStart);
+        ILaya.systemTimer.clear(this, this._beginLoop);
+        ILaya.systemTimer.clear(this, this._doEase);
+        ILaya.systemTimer.clear(this, this.firstStart);
         var time: number = Browser.now();
         var dTime: number;
         dTime = time - this._startTimer - this._delay;
@@ -292,7 +292,7 @@ export class Tween {
      */
     _clear(): void {
         this.pause();
-        ILaya.timer.clear(this, this.firstStart);
+        ILaya.systemTimer.clear(this, this.firstStart);
         this._complete = null;
         this._target = null;
         this._ease = null;
@@ -332,7 +332,7 @@ export class Tween {
         this._usedTimer = 0;
         this._startTimer = Browser.now();
         if (this._delayParam) {
-            ILaya.timer.once(this._delay, this, this.firstStart, this._delayParam);
+            ILaya.systemTimer.once(this._delay, this, this.firstStart, this._delayParam);
             return;
         }
         var props: any[] = this._props;
@@ -340,7 +340,7 @@ export class Tween {
             var prop: any[] = props[i];
             this._target[prop[0]] = prop[1];
         }
-        ILaya.timer.once(this._delay, this, this._beginLoop);
+        ILaya.systemTimer.once(this._delay, this, this._beginLoop);
     }
 
     /**
@@ -351,7 +351,7 @@ export class Tween {
         this._startTimer = Browser.now() - this._usedTimer - this._delay;
         if (this._delayParam) {
             if (this._usedTimer < 0) {
-                ILaya.timer.once(-this._usedTimer, this, this.firstStart, this._delayParam);
+                ILaya.systemTimer.once(-this._usedTimer, this, this.firstStart, this._delayParam);
             } else {
                 this.firstStart.apply(this, <any>this._delayParam);
             }

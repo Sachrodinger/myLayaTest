@@ -49,6 +49,7 @@ import "./loaders/NullLoader";
 import "./loaders/BitmapFontLoader";
 import "./loaders/TTFFontLoader";
 import "./media/webaudio/WebAudioLoader";
+import { MaskFilter } from "./filters/MaskFilter";
 
 let c = ClassUtils.regClass;
 
@@ -73,6 +74,7 @@ c("BitmapFont", BitmapFont);
 c("BlurFilter", BlurFilter);
 c("ColorFilter", ColorFilter);
 c("GlowFilter", GlowFilter);
+c("MaskFilter", MaskFilter);
 c("Point", Point);
 c("Rectangle", Rectangle);
 c("Texture", Texture);

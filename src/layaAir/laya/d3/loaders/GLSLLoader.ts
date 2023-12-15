@@ -4,11 +4,20 @@ import { ShaderCompile } from "../../webgl/utils/ShaderCompile";
 class GLSLLoader implements IResourceLoader {
     load(task: ILoadTask) {
         let url = task.url;
-        return task.loader.fetch(url, "text", task.progress.createCallback(), task.options).then(data => {
-            if (!data)
-                return null;
+        return Loader.GetBundleData(task, url).then(bundleData=>{
+            let p:Promise<any>;
+            if (bundleData){
+                p = Promise.resolve(bundleData);
+            }
+            else{
+                p = task.loader.fetch(url, "text", task.progress.createCallback(), task.options);
+            }
+            return p.then(data => {
+                if (!data)
+                    return null;
 
-            return ShaderCompile.addInclude(task.url, data, true);
+                return ShaderCompile.addInclude(task.url, data, true);
+            });
         });
     }
 }

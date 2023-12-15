@@ -76,6 +76,8 @@ export class ShuriKenParticle3DShaderDeclaration {
 	/**@internal */
 	static THREEDSTARTROTATION: number;
 	/**@internal */
+	static THREEDROTATIONOVERLIFETIMESEPERATE: number;
+	/**@internal */
 	static STRETCHEDBILLBOARDLENGTHSCALE: number;
 	/**@internal */
 	static STRETCHEDBILLBOARDSPEEDSCALE: number;
@@ -220,6 +222,7 @@ export class ShuriKenParticle3DShaderDeclaration {
 		ShuriKenParticle3DShaderDeclaration.SCALINGMODE = Shader3D.propertyNameToID("u_ScalingMode");
 		ShuriKenParticle3DShaderDeclaration.GRAVITY = Shader3D.propertyNameToID("u_Gravity");
 		ShuriKenParticle3DShaderDeclaration.THREEDSTARTROTATION = Shader3D.propertyNameToID("u_ThreeDStartRotation");
+		ShuriKenParticle3DShaderDeclaration.THREEDROTATIONOVERLIFETIMESEPERATE = Shader3D.propertyNameToID("u_ThreeDRotationOverLifetime");
 		ShuriKenParticle3DShaderDeclaration.STRETCHEDBILLBOARDLENGTHSCALE = Shader3D.propertyNameToID("u_StretchedBillboardLengthScale");
 		ShuriKenParticle3DShaderDeclaration.STRETCHEDBILLBOARDSPEEDSCALE = Shader3D.propertyNameToID("u_StretchedBillboardSpeedScale");
 		ShuriKenParticle3DShaderDeclaration.SIMULATIONSPACE = Shader3D.propertyNameToID("u_SimulationSpace");
@@ -287,6 +290,7 @@ export class ShuriKenParticle3DShaderDeclaration {
 		uniformMap.addShaderUniform(ShuriKenParticle3DShaderDeclaration.SCALINGMODE, 'u_ScalingMode');
 		uniformMap.addShaderUniform(ShuriKenParticle3DShaderDeclaration.GRAVITY, 'u_Gravity');
 		uniformMap.addShaderUniform(ShuriKenParticle3DShaderDeclaration.THREEDSTARTROTATION, 'u_ThreeDStartRotation');
+		uniformMap.addShaderUniform(ShuriKenParticle3DShaderDeclaration.THREEDROTATIONOVERLIFETIMESEPERATE,'u_ThreeDRotationOverLifetime');
 		uniformMap.addShaderUniform(ShuriKenParticle3DShaderDeclaration.STRETCHEDBILLBOARDLENGTHSCALE, 'u_StretchedBillboardLengthScale');
 		uniformMap.addShaderUniform(ShuriKenParticle3DShaderDeclaration.STRETCHEDBILLBOARDSPEEDSCALE, 'u_StretchedBillboardSpeedScale');
 		uniformMap.addShaderUniform(ShuriKenParticle3DShaderDeclaration.SIMULATIONSPACE, 'u_SimulationSpace');

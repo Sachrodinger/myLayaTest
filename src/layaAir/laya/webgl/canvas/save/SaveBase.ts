@@ -26,6 +26,7 @@ export class SaveBase implements ISaveData {
     static TYPE_FILTERS: number = 0x200000;
     static TYPE_FILTERS_TYPE: number = 0x400000;
     static TYPE_COLORFILTER: number = 0x800000;
+    static TYPE_MASKFILTER:number =   0x900000;
     /*[DISBALEOUTCONST-END]*/
     private static POOL: any = SaveBase._createArray();
     private static _namemap: any = SaveBase._init();
@@ -55,6 +56,7 @@ export class SaveBase implements ISaveData {
         namemap[SaveBase.TYPE_SHADER] = "shader";
         namemap[SaveBase.TYPE_FILTERS] = "filters";
         namemap[SaveBase.TYPE_COLORFILTER] = '_colorFiler';
+        namemap[SaveBase.TYPE_MASKFILTER] = '_MaskFilter';
         return namemap;
     }
 

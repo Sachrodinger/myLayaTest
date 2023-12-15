@@ -29,6 +29,7 @@ export class VertexShurikenParticleBillboard extends VertexShuriKenParticle {
 		return VertexShurikenParticleBillboard._vertexInstanceParticleDeclaration;
 	}
 
+
 	private static _billboardVertexArray: Float32Array;
 	static get billboardVertexArray(): Float32Array {
 		return VertexShurikenParticleBillboard._billboardVertexArray;
@@ -46,19 +47,19 @@ export class VertexShurikenParticleBillboard extends VertexShuriKenParticle {
 	  * @internal
 	  */
 	static __init__(): void {
-		VertexShurikenParticleBillboard._vertexDeclaration = new VertexDeclaration(168, [
+		VertexShurikenParticleBillboard._vertexDeclaration = new VertexDeclaration(180, [
 			new VertexElement(0, VertexElementFormat.Vector4, VertexShuriKenParticle.PARTICLE_CORNERTEXTURECOORDINATE0),
 			new VertexElement(16, VertexElementFormat.Vector4, VertexShuriKenParticle.PARTICLE_SHAPEPOSITIONSTARTLIFETIME),
 			new VertexElement(32, VertexElementFormat.Vector4, VertexShuriKenParticle.PARTICLE_DIRECTIONTIME),
 			new VertexElement(48, VertexElementFormat.Vector4, VertexShuriKenParticle.PARTICLE_STARTCOLOR0),
 			new VertexElement(64, VertexElementFormat.Vector3, VertexShuriKenParticle.PARTICLE_STARTSIZE),
 			new VertexElement(76, VertexElementFormat.Vector3, VertexShuriKenParticle.PARTICLE_STARTROTATION),
-			new VertexElement(88, VertexElementFormat.Single, VertexShuriKenParticle.PARTICLE_STARTSPEED),
-			new VertexElement(92, VertexElementFormat.Vector4, VertexShuriKenParticle.PARTICLE_RANDOM0),
-			new VertexElement(108, VertexElementFormat.Vector4, VertexShuriKenParticle.PARTICLE_RANDOM1),
-			new VertexElement(124, VertexElementFormat.Vector3, VertexShuriKenParticle.PARTICLE_SIMULATIONWORLDPOSTION),//TODO:local模式下可省去内存
-			new VertexElement(136, VertexElementFormat.Vector4, VertexShuriKenParticle.PARTICLE_SIMULATIONWORLDROTATION),
-			new VertexElement(152, VertexElementFormat.Vector4,VertexShuriKenParticle.PARTICLE_SIMULATIONUV)
+			new VertexElement(88, VertexElementFormat.Vector4, VertexShuriKenParticle.PARTICLE_STARTSPEED),
+			new VertexElement(104, VertexElementFormat.Vector4, VertexShuriKenParticle.PARTICLE_RANDOM0),
+			new VertexElement(120, VertexElementFormat.Vector4, VertexShuriKenParticle.PARTICLE_RANDOM1),
+			new VertexElement(136, VertexElementFormat.Vector3, VertexShuriKenParticle.PARTICLE_SIMULATIONWORLDPOSTION),//TODO:local模式下可省去内存
+			new VertexElement(148, VertexElementFormat.Vector4, VertexShuriKenParticle.PARTICLE_SIMULATIONWORLDROTATION),
+			new VertexElement(164, VertexElementFormat.Vector4,VertexShuriKenParticle.PARTICLE_SIMULATIONUV),
 		]);
 
 
@@ -66,19 +67,20 @@ export class VertexShurikenParticleBillboard extends VertexShuriKenParticle {
 			new VertexElement(0, VertexElementFormat.Vector4, VertexShuriKenParticle.PARTICLE_CORNERTEXTURECOORDINATE0)
 		]);
 
-		VertexShurikenParticleBillboard._vertexInstanceParticleDeclaration = new VertexDeclaration(152, [
+		VertexShurikenParticleBillboard._vertexInstanceParticleDeclaration = new VertexDeclaration(164, [
 			new VertexElement(0, VertexElementFormat.Vector4, VertexShuriKenParticle.PARTICLE_SHAPEPOSITIONSTARTLIFETIME),
 			new VertexElement(16, VertexElementFormat.Vector4, VertexShuriKenParticle.PARTICLE_DIRECTIONTIME),
 			new VertexElement(32, VertexElementFormat.Vector4, VertexShuriKenParticle.PARTICLE_STARTCOLOR0),
 			new VertexElement(48, VertexElementFormat.Vector3, VertexShuriKenParticle.PARTICLE_STARTSIZE),
 			new VertexElement(60, VertexElementFormat.Vector3, VertexShuriKenParticle.PARTICLE_STARTROTATION),
-			new VertexElement(72, VertexElementFormat.Single, VertexShuriKenParticle.PARTICLE_STARTSPEED),
-			new VertexElement(76, VertexElementFormat.Vector4, VertexShuriKenParticle.PARTICLE_RANDOM0),
-			new VertexElement(92, VertexElementFormat.Vector4, VertexShuriKenParticle.PARTICLE_RANDOM1),
-			new VertexElement(108, VertexElementFormat.Vector3, VertexShuriKenParticle.PARTICLE_SIMULATIONWORLDPOSTION),//TODO:local模式下可省去内存
-			new VertexElement(120, VertexElementFormat.Vector4, VertexShuriKenParticle.PARTICLE_SIMULATIONWORLDROTATION),
-			new VertexElement(136, VertexElementFormat.Vector4,VertexShuriKenParticle.PARTICLE_SIMULATIONUV)
-		])
+			new VertexElement(72, VertexElementFormat.Vector4, VertexShuriKenParticle.PARTICLE_STARTSPEED),
+			new VertexElement(88, VertexElementFormat.Vector4, VertexShuriKenParticle.PARTICLE_RANDOM0),
+			new VertexElement(104, VertexElementFormat.Vector4, VertexShuriKenParticle.PARTICLE_RANDOM1),
+			new VertexElement(120, VertexElementFormat.Vector3, VertexShuriKenParticle.PARTICLE_SIMULATIONWORLDPOSTION),//TODO:local模式下可省去内存
+			new VertexElement(132, VertexElementFormat.Vector4, VertexShuriKenParticle.PARTICLE_SIMULATIONWORLDROTATION),
+			new VertexElement(148, VertexElementFormat.Vector4,VertexShuriKenParticle.PARTICLE_SIMULATIONUV)
+		]);
+
 
 		VertexShurikenParticleBillboard._billboardIndexArray = new Uint16Array([
 			0, 2, 1, 0, 3, 2

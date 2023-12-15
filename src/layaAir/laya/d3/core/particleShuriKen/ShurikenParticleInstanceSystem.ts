@@ -2,6 +2,7 @@ import { LayaGL } from "../../../layagl/LayaGL";
 import { MathUtil } from "../../../maths/MathUtil";
 import { Quaternion } from "../../../maths/Quaternion";
 import { Vector3 } from "../../../maths/Vector3";
+import { Vector4 } from "../../../maths/Vector4";
 import { BufferUsage } from "../../../RenderEngine/RenderEnum/BufferTargetType";
 import { DrawType } from "../../../RenderEngine/RenderEnum/DrawType";
 import { IndexFormat } from "../../../RenderEngine/RenderEnum/IndexFormat";
@@ -17,12 +18,12 @@ import { RenderContext3D } from "../render/RenderContext3D";
 import { ShurikenParticleData } from "./ShurikenParticleData";
 import { ShurikenParticleRenderer } from "./ShurikenParticleRenderer";
 import { ShurikenParticleSystem } from "./ShurikenParticleSystem";
+import { ShurikenParticleExtension, ShurikenParticleLifetimeData } from "./util/ShurikenParticleExtension";
 
 export class ShurikenParticleInstanceSystem extends ShurikenParticleSystem {
 
     private _instanceParticleVertexBuffer: VertexBuffer3D = null;
     private _instanceVertex: Float32Array = null;
-
 
     private _meshIndexCount: number;
     private _meshFloatCountPreVertex: number;
@@ -152,6 +153,7 @@ export class ShurikenParticleInstanceSystem extends ShurikenParticleSystem {
                 this._instanceParticleVertexBuffer.setData(this._instanceVertex.buffer);
                 this._instanceParticleVertexBuffer.instanceBuffer = true;
                 this._bufferState.applyState([this._vertexBuffer,this._instanceParticleVertexBuffer],this._indexBuffer)
+                this._currentVertices = new Float32Array(particleVbSize/4);
             }
 
         }
@@ -181,6 +183,8 @@ export class ShurikenParticleInstanceSystem extends ShurikenParticleSystem {
             this._instanceParticleVertexBuffer.vertexDeclaration = particleDeclaration;
             this._instanceParticleVertexBuffer.setData(this._instanceVertex.buffer);
             this._instanceParticleVertexBuffer.instanceBuffer = true;
+            this._currentVertices = new Float32Array(particleVbSize/4);
+
             // this._instanceBufferState.bind();
             // this._instanceBufferState.applyIndexBuffer(this._indexBuffer);
             // this._instanceBufferState.applyVertexBuffer(this._vertexBuffer);
@@ -451,6 +455,11 @@ export class ShurikenParticleInstanceSystem extends ShurikenParticleSystem {
 
         //StartSpeed
         this._instanceVertex[offset++] = startSpeed;
+        //zzs:pos
+        this._instanceVertex[offset++] = startSpeed;
+        this._instanceVertex[offset++] = startSpeed;
+        this._instanceVertex[offset++] = startSpeed;
+
         needRandomColor && (this._instanceVertex[offset + 1] = randomColor);
         needRandomSize && (this._instanceVertex[offset + 2] = randomSize);
         needRandomRotation && (this._instanceVertex[offset + 3] = randomRotation);
@@ -487,6 +496,49 @@ export class ShurikenParticleInstanceSystem extends ShurikenParticleSystem {
         return true;
     }
 
+    //zzw:cpu par start instance
+    applyLifetimeData(){
+        var render = this._ownerRender;
+        let renderMode = render.renderMode;
+        var vertexDeclaration;
+        if (renderMode === 4) {
+            if (render.mesh) {
+                vertexDeclaration = VertexShurikenParticleMesh.vertexInstanceParticleDeclaration;
+            }
+            else
+            {
+                //渲染网格，但是网格丢失，返回原顶点数据
+                return false;
+            }
+        }else{
+            vertexDeclaration = VertexShurikenParticleBillboard.vertexInstanceParticleDeclaration;
+        }
+        
+        if(!vertexDeclaration)
+        {
+            //返回原顶点数据
+            return false;
+        }
+
+        //创建一个新的float32array存放新的数据并返回
+        // this._currentVertices = this._instanceVertex.subarray(0,this._instanceVertex.length);
+        // if(this._currentVertices == null){
+        //     this._currentVertices = new Float32Array(this._vertices);
+        // }
+        // this._currentVertices = Float32Array.from(this._instanceVertex);
+        //只更改要渲染的
+        if (this._firstActiveElement < this._firstFreeElement)
+        {
+            this.setVeticesDatas(this._instanceVertex,this._currentVertices,vertexDeclaration,this._firstActiveElement,this._firstFreeElement);
+        }else{
+            this.setVeticesDatas(this._instanceVertex,this._currentVertices,vertexDeclaration,this._firstActiveElement,this._bufferMaxParticles);
+            if(this._firstFreeElement>0)
+            this.setVeticesDatas(this._instanceVertex,this._currentVertices,vertexDeclaration,0,this._firstFreeElement);
+        }
+        return true;
+    }
+    //end
+
     addNewParticlesToVertexBuffer(): void {
         let byteStride = this._floatCountPerParticleData * 4;
         // instance buffer 绘制不能偏移, 每次 从 0 更新整个 buffer
@@ -505,14 +557,30 @@ export class ShurikenParticleInstanceSystem extends ShurikenParticleSystem {
         }
 
         this._firstNewElement = this._firstFreeElement;
+        this._currentVertices = Float32Array.from(this._instanceVertex);
     }
 
     _updateRenderParams(stage: RenderContext3D) {
+        //每帧更新顶点数据
+        //最大粒子数小于0的时候才修改
+        let applyed = false;
+        if(this.maxParticles > 0){
+            applyed = this.applyLifetimeData();
+        }
+        
+        let byteStride = this._floatCountPerParticleData * 4;
+        var start: number = this._firstActiveElement * byteStride;
         //this._instanceBufferState.bind();
         // instance buffer 每次从 0 更新
         this.clearRenderParams();
         if (this._firstActiveElement < this._firstFreeElement) {
             let indexCount = this._firstFreeElement - this._firstActiveElement;
+            //传递顶点数据
+            if(applyed)
+            {
+                this._instanceParticleVertexBuffer.setData(this._currentVertices.buffer, 0, start, (this._firstFreeElement - this._firstActiveElement) * byteStride);
+            }
+
             this.setDrawElemenParams(this._meshIndexCount,0);
             this.instanceCount = indexCount;
           //  LayaGL.renderDrawConatext.drawElementsInstanced(MeshTopology.Triangles, this._meshIndexCount, IndexFormat.UInt16, 0, indexCount);
@@ -521,9 +589,20 @@ export class ShurikenParticleInstanceSystem extends ShurikenParticleSystem {
         }
         else {
             let indexCount = this._bufferMaxParticles - this._firstActiveElement;
+            //传递顶点数据
+            if(applyed)
+            {
+                this._instanceParticleVertexBuffer.setData(this._currentVertices.buffer, 0, start, (this._bufferMaxParticles - this._firstActiveElement) * byteStride);
+            }
             if (this._firstFreeElement > 0) {
+                //传递顶点数据
+                if(applyed)
+                {
+                    this._instanceParticleVertexBuffer.setData(this._currentVertices.buffer, (this._bufferMaxParticles - this._firstActiveElement) * byteStride, 0, this._firstFreeElement * byteStride);
+                }
                 indexCount += this._firstFreeElement;
             }
+
             this.setDrawElemenParams(this._meshIndexCount,0);
             this.instanceCount = indexCount;
             //LayaGL.renderEngine.getDrawContext().drawElementsInstanced(MeshTopology.Triangles, this._meshIndexCount, IndexFormat.UInt16, 0, indexCount);

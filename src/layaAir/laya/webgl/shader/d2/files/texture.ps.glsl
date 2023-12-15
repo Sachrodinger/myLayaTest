@@ -44,7 +44,9 @@ vec4 sampleTexture(sampler2D texture, vec2 uv)
 #ifndef GAMMATEXTURE
     //是linear数据
     #ifdef GAMMASPACE
+        #if !defined(FILTERCANCEL) 
         color.xyz = linearToGamma(color.xyz);    
+        #endif
     #endif
 #else
     //gamma数据
@@ -52,6 +54,9 @@ vec4 sampleTexture(sampler2D texture, vec2 uv)
         color.xyz = gammaToLinear(color.xyz);
     #endif
 #endif
+
+    
+
     return color;
 }
 
@@ -108,6 +113,10 @@ uniform vec4 colorAdd;
 
 #ifdef FILLTEXTURE
 uniform vec4 u_TexRange; // startu,startv,urange, vrange
+#endif
+
+#ifdef MASK_FILTER
+uniform vec4 _mask_vec;
 #endif
 
 void main()
@@ -179,5 +188,13 @@ void main()
 	}
     gl_FragColor = vec4(u_color.rgb, vec4Color.a * u_blurInfo2.z);
     gl_FragColor.rgb *= gl_FragColor.a;
+#endif
+
+
+#ifdef MASK_FILTER
+    float dist = distance(v_texcoordAlpha.xy , vec2(_mask_vec.x ,_mask_vec.y));
+    float mask = (1.0 - smoothstep( (1.0 -_mask_vec.z) -_mask_vec.w,  (1.0 -_mask_vec.z) + _mask_vec.w ,dist));
+    gl_FragColor *=mask;
+
 #endif
 }

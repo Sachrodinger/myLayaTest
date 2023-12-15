@@ -27,6 +27,7 @@ export class UBBParser {
         this._handlers["color"] = this.onTag_COLOR;
         this._handlers["font"] = this.onTag_FONT;
         this._handlers["size"] = this.onTag_SIZE;
+        this._handlers["updowncolor"] = this.onTag_UPDOWNCOLOR;
     }
 
     protected onTag_URL(tagName: string, end: boolean, attr: string): string {
@@ -77,6 +78,15 @@ export class UBBParser {
         if (!end) {
             this.lastColor = attr;
             return "<font color=\"" + attr + "\">";
+        }
+        else
+            return "</font>";
+    }
+
+    protected onTag_UPDOWNCOLOR(tagName: string, end: boolean, attr: string): string {
+        if (!end) {
+            this.lastColor = attr;
+            return "<font updowncolor=\"" + attr + "\">";
         }
         else
             return "</font>";

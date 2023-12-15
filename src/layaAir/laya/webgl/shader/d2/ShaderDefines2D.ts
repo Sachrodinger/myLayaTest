@@ -1,6 +1,7 @@
 import { ShaderDefinesBase } from "../ShaderDefinesBase"
 export class ShaderDefines2D extends ShaderDefinesBase {
     static TEXTURE2D: number = 0x01;
+    static FILTERMASK :number = 0x02;
     static PRIMITIVE: number = 0x04;
     static FILTERGLOW: number = 0x08;
     static FILTERBLUR: number = 0x10;
@@ -16,8 +17,9 @@ export class ShaderDefines2D extends ShaderDefinesBase {
 
     static INVERTY: number = 0x2000;
     static GAMMATEXTURE: number = 0x4000;
+    static FILTERCANCEL :number = 0x8000;
 
-    static NOOPTMASK: number = ShaderDefines2D.FILTERGLOW | ShaderDefines2D.FILTERBLUR | ShaderDefines2D.FILTERCOLOR | ShaderDefines2D.FILLTEXTURE;	//有这些定义的不要优化。见submittexture
+    static NOOPTMASK: number = ShaderDefines2D.FILTERGLOW | ShaderDefines2D.FILTERBLUR | ShaderDefines2D.FILTERCOLOR | ShaderDefines2D.FILLTEXTURE |ShaderDefines2D.FILTERMASK;	//有这些定义的不要优化。见submittexture
 
     private static __name2int: any = {};
     private static __int2name: any[] = [];
@@ -30,7 +32,9 @@ export class ShaderDefines2D extends ShaderDefinesBase {
         ShaderDefines2D.reg("GLOW_FILTER", ShaderDefines2D.FILTERGLOW);
         ShaderDefines2D.reg("BLUR_FILTER", ShaderDefines2D.FILTERBLUR);
         ShaderDefines2D.reg("COLOR_FILTER", ShaderDefines2D.FILTERCOLOR);
+        ShaderDefines2D.reg("MASK_FILTER" ,ShaderDefines2D.FILTERMASK);
         ShaderDefines2D.reg("COLOR_ADD", ShaderDefines2D.COLORADD);
+
 
         ShaderDefines2D.reg("WORLDMAT", ShaderDefines2D.WORLDMAT);
         ShaderDefines2D.reg("FILLTEXTURE", ShaderDefines2D.FILLTEXTURE);
@@ -41,6 +45,7 @@ export class ShaderDefines2D extends ShaderDefinesBase {
         ShaderDefines2D.reg('INVERTY', ShaderDefines2D.INVERTY);
 
         ShaderDefines2D.reg('GAMMATEXTURE', ShaderDefines2D.GAMMATEXTURE);
+        ShaderDefines2D.reg('FILTERCANCEL' , ShaderDefines2D.FILTERCANCEL);
     }
 
     constructor() {

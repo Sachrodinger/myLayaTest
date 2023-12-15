@@ -20,6 +20,7 @@ import { Vector4 } from "../../../maths/Vector4";
 import { RenderState } from "../../../RenderEngine/RenderShader/RenderState";
 import { Event } from "../../../events/Event";
 import { Config } from "../../../../Config";
+import { ShurikenParticleMaterial } from "../particleShuriKen/ShurikenParticleMaterial";
 
 export enum MaterialRenderMode {
     /**渲染状态_不透明。*/
@@ -418,7 +419,7 @@ export class Material extends Resource implements IClone {
                 this.blendSrc = RenderState.BLENDPARAM_SRC_ALPHA;
                 this.blendDst = RenderState.BLENDPARAM_ONE;
                 this.depthTest = RenderState.DEPTHTEST_LESS;
-                this._shaderValues.addDefine(Material.SHADERDEFINE_ADDTIVEFOG);
+                // this._shaderValues.addDefine(Material.SHADERDEFINE_ADDTIVEFOG);
                 break;
             case MaterialRenderMode.RENDERMODE_ALPHABLENDED:
                 this.renderQueue = Material.RENDERQUEUE_TRANSPARENT;

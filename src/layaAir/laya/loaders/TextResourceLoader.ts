@@ -3,33 +3,64 @@ import { TextResource, TextResourceFormat } from "../resource/TextResource";
 
 class TextAssetLoader implements IResourceLoader {
     load(task: ILoadTask) {
-        return task.loader.fetch(task.url, "text", task.progress.createCallback(), task.options).then(data => {
-            if (!data)
-                return null;
+        return Loader.GetBundleData(task, task.url).then(bundleData=>{
+            let p:Promise<any>;
+            if (bundleData){
+                p = Promise.resolve(bundleData);
+            }
+            else
+            {
+                p = task.loader.fetch(task.url, "text", task.progress.createCallback(), task.options);
+            }
+            return p.then(data => {
+                if (!data)
+                    return null;
 
-            return new TextResource(data, TextResourceFormat.Plain);
+                return new TextResource(data, TextResourceFormat.Plain);
+            });
         });
     }
 }
 
 class BytesAssetLoader implements IResourceLoader {
     load(task: ILoadTask) {
-        return task.loader.fetch(task.url, "arraybuffer", task.progress.createCallback(), task.options).then(data => {
-            if (!data)
-                return null;
-
-            return new TextResource(data, TextResourceFormat.Buffer);
+        return Loader.GetBundleData(task, task.url, false).then(bundleData=>{
+            let p:Promise<any>;
+            if (bundleData){
+                p = Promise.resolve(bundleData.buffer);
+            }
+            else
+            {
+                p = task.loader.fetch(task.url, "arraybuffer", task.progress.createCallback(), task.options);
+            }
+            return p.then(data => {
+                if (!data)
+                    return null;
+    
+                return new TextResource(data, TextResourceFormat.Buffer);
+            });
         });
     }
 }
 
 class JsonAssetLoader implements IResourceLoader {
     load(task: ILoadTask) {
-        return task.loader.fetch(task.url, "json", task.progress.createCallback(), task.options).then(data => {
-            if (!data)
-                return null;
-
-            return new TextResource(data, TextResourceFormat.JSON);
+        return Loader.GetBundleData(task, task.url).then(bundleData=>{
+            let p:Promise<any>;
+            if (bundleData){
+                p = Promise.resolve(JSON.parse(bundleData));
+            }
+            else
+            {
+                p = task.loader.fetch(task.url, "json", task.progress.createCallback(), task.options);
+            }
+    
+            return p.then(data => {
+                if (!data)
+                    return null;
+    
+                return new TextResource(data, TextResourceFormat.JSON);
+            });
         });
     }
 }

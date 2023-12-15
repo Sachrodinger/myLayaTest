@@ -1174,8 +1174,8 @@ export class Camera extends BaseCamera {
         Stat.enableOpaque && scene._renderScene(context, ILaya3D.Scene3D.SCENERENDERFLAG_RENDERQPAQUE);
         this._applyCommandBuffer(CameraEventFlags.BeforeSkyBox, context);
         //copy color
-        this._opaquePass && this._createOpaqueTexture(renderTex, context);
-        this.recoverRenderContext3D(context, renderTex);
+        // this._opaquePass && this._createOpaqueTexture(renderTex, context);
+        // this.recoverRenderContext3D(context, renderTex);
         //draw sky box
         scene._renderScene(context, ILaya3D.Scene3D.SCENERENDERFLAG_SKYBOX);
         //render before transparent
@@ -1544,7 +1544,8 @@ export class Camera extends BaseCamera {
     }
 
     private RenderBuiltIn(context: RenderContext3D, scene: Scene3D, viewport: Viewport, needInternalRT: boolean, shader: Shader3D, replacementTag: string) {
-        var needShadowCasterPass: boolean = this._renderShadowMap(scene, context);
+        //yxx 直接关闭阴影
+        var needShadowCasterPass: boolean = false;//this._renderShadowMap(scene, context);
         this._preRenderMainPass(context, scene, needInternalRT, viewport);
         this._renderMainPass(context, viewport, scene, shader, replacementTag, needInternalRT);
         this._aftRenderMainPass(needShadowCasterPass);

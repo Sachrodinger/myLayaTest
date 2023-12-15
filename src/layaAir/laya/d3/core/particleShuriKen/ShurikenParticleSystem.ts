@@ -52,6 +52,10 @@ import { Vector4 } from "../../../maths/Vector4";
 import { VertexElement } from "../../../renders/VertexElement";
 import { BufferState } from "../../../webgl/utils/BufferState";
 import { VertexMesh } from "../../../RenderEngine/RenderShader/VertexMesh";
+import { ShurikenParticleExtension, ShurikenParticleLifetimeData, ShurikenParticlePerVertexData } from "./util/ShurikenParticleExtension";
+import { Color } from "../../../maths/Color";
+import { Laya } from "../../../../Laya";
+import { Shader3D } from "../../../RenderEngine/RenderShader/Shader3D";
 
 
 /**
@@ -562,17 +566,20 @@ export class ShurikenParticleSystem extends GeometryElement implements IClone {
     set velocityOverLifetime(value: VelocityOverLifetime) {
         var shaDat: ShaderData = this._ownerRender._shaderValues;
 
-        shaDat.removeDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_VELOCITYOVERLIFETIMECONSTANT);
-        shaDat.removeDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_VELOCITYOVERLIFETIMECURVE);
-        shaDat.removeDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_VELOCITYOVERLIFETIMERANDOMCONSTANT);
-        shaDat.removeDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_VELOCITYOVERLIFETIMERANDOMCURVE);
+        // shaDat.removeDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_VELOCITYOVERLIFETIMECONSTANT);
+        // shaDat.removeDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_VELOCITYOVERLIFETIMECURVE);
+        // shaDat.removeDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_VELOCITYOVERLIFETIMERANDOMCONSTANT);
+        // shaDat.removeDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_VELOCITYOVERLIFETIMERANDOMCURVE);
 
         this._velocityOverLifetime = value;
 
         if (value) {
+            /*
+            //转到cpu计算，不行设定宏和buffer
             var velocity: GradientVelocity = value.velocity;
             var velocityType: number = velocity.type;
 
+            
             if (value.enable) {
                 switch (velocityType) {
                     case 0:
@@ -585,10 +592,10 @@ export class ShurikenParticleSystem extends GeometryElement implements IClone {
                         shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.VOLVELOCITYGRADIENTY, velocity.gradientY._elements);
                         shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.VOLVELOCITYGRADIENTZ, velocity.gradientZ._elements);
                         break;
-                    case 2:
-                        shaDat.addDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_VELOCITYOVERLIFETIMERANDOMCONSTANT);
-                        shaDat.setVector3(ShuriKenParticle3DShaderDeclaration.VOLVELOCITYCONST, velocity.constantMin);
-                        shaDat.setVector3(ShuriKenParticle3DShaderDeclaration.VOLVELOCITYCONSTMAX, velocity.constantMax);
+                    // case 2:
+                    //     // shaDat.addDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_VELOCITYOVERLIFETIMERANDOMCONSTANT);
+                    //     // shaDat.setVector3(ShuriKenParticle3DShaderDeclaration.VOLVELOCITYCONST, velocity.constantMin);
+                    //     // shaDat.setVector3(ShuriKenParticle3DShaderDeclaration.VOLVELOCITYCONSTMAX, velocity.constantMax);
                         break;
                     case 3:
                         shaDat.addDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_VELOCITYOVERLIFETIMERANDOMCURVE);
@@ -603,6 +610,7 @@ export class ShurikenParticleSystem extends GeometryElement implements IClone {
                         break;
                 }
             }
+            */
             shaDat.setInt(ShuriKenParticle3DShaderDeclaration.VOLSPACETYPE, value.space);
         }
     }
@@ -615,93 +623,97 @@ export class ShurikenParticleSystem extends GeometryElement implements IClone {
     }
 
     set colorOverLifetime(value: ColorOverLifetime) {
-        var shaDat: ShaderData = this._ownerRender._shaderValues;
+        // var shaDat: ShaderData = this._ownerRender._shaderValues;
 
-        shaDat.removeDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_COLOROVERLIFETIME);
-        shaDat.removeDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_RANDOMCOLOROVERLIFETIME);
+        // shaDat.removeDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_COLOROVERLIFETIME);
+        // shaDat.removeDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_RANDOMCOLOROVERLIFETIME);
 
         this._colorOverLifetime = value;
 
         if (value) {
+            /*
+            //转到cpu计算，不行设定宏和buffer
             var color: GradientColor = value.color;
+            
             if (value.enable) {
                 switch (color.type) {
                     case 1:
-                        shaDat.addDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_COLOROVERLIFETIME);
+                        // shaDat.addDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_COLOROVERLIFETIME);
 
-                        let gradientColor: Gradient = color.gradient;
-                        shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.COLOROVERLIFEGRADIENTALPHAS, gradientColor._alphaElements);
-                        shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.COLOROVERLIFEGRADIENTCOLORS, gradientColor._rgbElements);
-                        let ranges = gradientColor._keyRanges;
-                        ranges.setValue(1, 0, 1, 0);
-                        for (let index = 0; index < gradientColor.colorRGBKeysCount; index++) {
-                            let colorKey = gradientColor._rgbElements[index * 4];
-                            ranges.x = Math.min(ranges.x, colorKey);
-                            ranges.y = Math.max(ranges.y, colorKey);
-                        }
-                        for (let index = 0; index < gradientColor.colorAlphaKeysCount; index++) {
-                            let alphaKey = gradientColor._alphaElements[index * 2];
-                            ranges.z = Math.min(ranges.z, alphaKey);
-                            ranges.w = Math.max(ranges.w, alphaKey);
-                        }
-                        shaDat.setVector(ShuriKenParticle3DShaderDeclaration.COLOROVERLIFEGRADIENTRANGES, ranges);
+                        // let gradientColor: Gradient = color.gradient;
+                        // shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.COLOROVERLIFEGRADIENTALPHAS, gradientColor._alphaElements);
+                        // shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.COLOROVERLIFEGRADIENTCOLORS, gradientColor._rgbElements);
+                        // let ranges = gradientColor._keyRanges;
+                        // ranges.setValue(1, 0, 1, 0);
+                        // for (let index = 0; index < gradientColor.colorRGBKeysCount; index++) {
+                        //     let colorKey = gradientColor._rgbElements[index * 4];
+                        //     ranges.x = Math.min(ranges.x, colorKey);
+                        //     ranges.y = Math.max(ranges.y, colorKey);
+                        // }
+                        // for (let index = 0; index < gradientColor.colorAlphaKeysCount; index++) {
+                        //     let alphaKey = gradientColor._alphaElements[index * 2];
+                        //     ranges.z = Math.min(ranges.z, alphaKey);
+                        //     ranges.w = Math.max(ranges.w, alphaKey);
+                        // }
+                        // shaDat.setVector(ShuriKenParticle3DShaderDeclaration.COLOROVERLIFEGRADIENTRANGES, ranges);
 
-                        if (gradientColor.maxColorAlphaKeysCount == 8) {
-                            shaDat.addDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_COLORKEYCOUNT_8);
-                        }
-                        else {
-                            shaDat.removeDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_COLORKEYCOUNT_8);
-                        }
+                        // if (gradientColor.maxColorAlphaKeysCount == 8) {
+                        //     shaDat.addDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_COLORKEYCOUNT_8);
+                        // }
+                        // else {
+                        //     shaDat.removeDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_COLORKEYCOUNT_8);
+                        // }
                         break;
                     case 3:
-                        shaDat.addDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_RANDOMCOLOROVERLIFETIME);
+                        // shaDat.addDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_RANDOMCOLOROVERLIFETIME);
 
-                        let minGradientColor: Gradient = color.gradientMin;
-                        let maxGradientColor: Gradient = color.gradientMax;
-                        shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.COLOROVERLIFEGRADIENTALPHAS, minGradientColor._alphaElements);
-                        shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.COLOROVERLIFEGRADIENTCOLORS, minGradientColor._rgbElements);
-                        shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.MAXCOLOROVERLIFEGRADIENTALPHAS, maxGradientColor._alphaElements);
-                        shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.MAXCOLOROVERLIFEGRADIENTCOLORS, maxGradientColor._rgbElements);
+                        // let minGradientColor: Gradient = color.gradientMin;
+                        // let maxGradientColor: Gradient = color.gradientMax;
+                        // shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.COLOROVERLIFEGRADIENTALPHAS, minGradientColor._alphaElements);
+                        // shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.COLOROVERLIFEGRADIENTCOLORS, minGradientColor._rgbElements);
+                        // shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.MAXCOLOROVERLIFEGRADIENTALPHAS, maxGradientColor._alphaElements);
+                        // shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.MAXCOLOROVERLIFEGRADIENTCOLORS, maxGradientColor._rgbElements);
 
-                        let minRanges = minGradientColor._keyRanges;
-                        minRanges.setValue(1, 0, 1, 0);
-                        for (let index = 0; index < minGradientColor.colorRGBKeysCount; index++) {
-                            let colorKey = minGradientColor._rgbElements[index * 4];
-                            minRanges.x = Math.min(minRanges.x, colorKey);
-                            minRanges.y = Math.max(minRanges.y, colorKey);
-                        }
-                        for (let index = 0; index < minGradientColor.colorAlphaKeysCount; index++) {
-                            let alphaKey = minGradientColor._alphaElements[index * 2];
-                            minRanges.z = Math.min(minRanges.z, alphaKey);
-                            minRanges.w = Math.max(minRanges.w, alphaKey);
-                        }
-                        shaDat.setVector(ShuriKenParticle3DShaderDeclaration.COLOROVERLIFEGRADIENTRANGES, minRanges);
-                        let maxRanges = maxGradientColor._keyRanges;
-                        maxRanges.setValue(1, 0, 1, 0);
-                        for (let index = 0; index < maxGradientColor.colorRGBKeysCount; index++) {
-                            let colorKey = maxGradientColor._rgbElements[index * 4];
-                            maxRanges.x = Math.min(maxRanges.x, colorKey);
-                            maxRanges.y = Math.max(maxRanges.y, colorKey);
-                        }
-                        for (let index = 0; index < maxGradientColor.colorAlphaKeysCount; index++) {
-                            let alphaKey = maxGradientColor._alphaElements[index * 2];
-                            maxRanges.z = Math.min(maxRanges.z, alphaKey);
-                            maxRanges.w = Math.max(maxRanges.w, alphaKey);
-                        }
-                        shaDat.setVector(ShuriKenParticle3DShaderDeclaration.MAXCOLOROVERLIFEGRADIENTRANGES, maxRanges);
+                        // let minRanges = minGradientColor._keyRanges;
+                        // minRanges.setValue(1, 0, 1, 0);
+                        // for (let index = 0; index < minGradientColor.colorRGBKeysCount; index++) {
+                        //     let colorKey = minGradientColor._rgbElements[index * 4];
+                        //     minRanges.x = Math.min(minRanges.x, colorKey);
+                        //     minRanges.y = Math.max(minRanges.y, colorKey);
+                        // }
+                        // for (let index = 0; index < minGradientColor.colorAlphaKeysCount; index++) {
+                        //     let alphaKey = minGradientColor._alphaElements[index * 2];
+                        //     minRanges.z = Math.min(minRanges.z, alphaKey);
+                        //     minRanges.w = Math.max(minRanges.w, alphaKey);
+                        // }
+                        // shaDat.setVector(ShuriKenParticle3DShaderDeclaration.COLOROVERLIFEGRADIENTRANGES, minRanges);
+                        // let maxRanges = maxGradientColor._keyRanges;
+                        // maxRanges.setValue(1, 0, 1, 0);
+                        // for (let index = 0; index < maxGradientColor.colorRGBKeysCount; index++) {
+                        //     let colorKey = maxGradientColor._rgbElements[index * 4];
+                        //     maxRanges.x = Math.min(maxRanges.x, colorKey);
+                        //     maxRanges.y = Math.max(maxRanges.y, colorKey);
+                        // }
+                        // for (let index = 0; index < maxGradientColor.colorAlphaKeysCount; index++) {
+                        //     let alphaKey = maxGradientColor._alphaElements[index * 2];
+                        //     maxRanges.z = Math.min(maxRanges.z, alphaKey);
+                        //     maxRanges.w = Math.max(maxRanges.w, alphaKey);
+                        // }
+                        // shaDat.setVector(ShuriKenParticle3DShaderDeclaration.MAXCOLOROVERLIFEGRADIENTRANGES, maxRanges);
 
-                        let maxkeyCount = Math.max(minGradientColor.maxColorAlphaKeysCount, maxGradientColor.maxColorAlphaKeysCount);
-                        if (maxkeyCount == 8) {
-                            shaDat.addDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_COLORKEYCOUNT_8);
-                        }
-                        else {
-                            shaDat.removeDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_COLORKEYCOUNT_8);
-                        }
+                        // let maxkeyCount = Math.max(minGradientColor.maxColorAlphaKeysCount, maxGradientColor.maxColorAlphaKeysCount);
+                        // if (maxkeyCount == 8) {
+                        //     shaDat.addDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_COLORKEYCOUNT_8);
+                        // }
+                        // else {
+                        //     shaDat.removeDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_COLORKEYCOUNT_8);
+                        // }
                         break;
                     default:
                         break;
                 }
             }
+            */
         }
     }
 
@@ -713,57 +725,61 @@ export class ShurikenParticleSystem extends GeometryElement implements IClone {
     }
 
     set sizeOverLifetime(value: SizeOverLifetime) {
-        var shaDat: ShaderData = this._ownerRender._shaderValues;
+        //var shaDat: ShaderData = this._ownerRender._shaderValues;
 
-        shaDat.removeDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_SIZEOVERLIFETIMECURVE);
-        shaDat.removeDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_SIZEOVERLIFETIMECURVESEPERATE);
-        shaDat.removeDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_SIZEOVERLIFETIMERANDOMCURVES);
-        shaDat.removeDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_SIZEOVERLIFETIMERANDOMCURVESSEPERATE);
+        // shaDat.removeDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_SIZEOVERLIFETIMECURVE);
+        // shaDat.removeDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_SIZEOVERLIFETIMECURVESEPERATE);
+        // shaDat.removeDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_SIZEOVERLIFETIMERANDOMCURVES);
+        // shaDat.removeDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_SIZEOVERLIFETIMERANDOMCURVESSEPERATE);
 
         this._sizeOverLifetime = value;
 
         if (value) {
+            /*
+            //转到cpu计算，不行设定宏和buffer
             var size: GradientSize = value.size;
             var sizeSeparate: boolean = size.separateAxes;
             var sizeType: number = size.type;
+            
             if (value.enable) {
                 switch (sizeType) {
                     case 0:
-                        if (sizeSeparate) {
-                            shaDat.addDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_SIZEOVERLIFETIMECURVESEPERATE);
+                        // if (sizeSeparate) {
+                        //     shaDat.addDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_SIZEOVERLIFETIMECURVESEPERATE);
 
-                            shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.SOLSIZEGRADIENTX, size.gradientX._elements);
-                            shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.SOLSIZEGRADIENTY, size.gradientY._elements);
-                            shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.SOLSizeGradientZ, size.gradientZ._elements);
-                        }
-                        else {
-                            shaDat.addDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_SIZEOVERLIFETIMECURVE);
+                        //     shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.SOLSIZEGRADIENTX, size.gradientX._elements);
+                        //     shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.SOLSIZEGRADIENTY, size.gradientY._elements);
+                        //     shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.SOLSizeGradientZ, size.gradientZ._elements);
+                        // }
+                        // else {
+                        //     shaDat.addDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_SIZEOVERLIFETIMECURVE);
 
-                            shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.SOLSIZEGRADIENT, size.gradient._elements);
-                        }
+                        //     shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.SOLSIZEGRADIENT, size.gradient._elements);
+                        // }
                         break;
                     case 2:
                         if (sizeSeparate) {
-                            shaDat.addDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_SIZEOVERLIFETIMERANDOMCURVESSEPERATE);
+                            // shaDat.addDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_SIZEOVERLIFETIMERANDOMCURVESSEPERATE);
 
-                            shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.SOLSIZEGRADIENTX, size.gradientXMin._elements);
-                            shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.SOLSIZEGRADIENTXMAX, size.gradientXMax._elements);
-                            shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.SOLSIZEGRADIENTY, size.gradientYMin._elements);
-                            shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.SOLSIZEGRADIENTYMAX, size.gradientYMax._elements);
-                            shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.SOLSizeGradientZ, size.gradientZMin._elements);
-                            shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.SOLSizeGradientZMAX, size.gradientZMax._elements);
+                            // shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.SOLSIZEGRADIENTX, size.gradientXMin._elements);
+                            // shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.SOLSIZEGRADIENTXMAX, size.gradientXMax._elements);
+                            // shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.SOLSIZEGRADIENTY, size.gradientYMin._elements);
+                            // shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.SOLSIZEGRADIENTYMAX, size.gradientYMax._elements);
+                            // shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.SOLSizeGradientZ, size.gradientZMin._elements);
+                            // shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.SOLSizeGradientZMAX, size.gradientZMax._elements);
                         }
                         else {
-                            shaDat.addDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_SIZEOVERLIFETIMERANDOMCURVES);
+                            // shaDat.addDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_SIZEOVERLIFETIMERANDOMCURVES);
 
-                            shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.SOLSIZEGRADIENT, size.gradientMin._elements);
-                            shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.SOLSizeGradientMax, size.gradientMax._elements);
+                            // shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.SOLSIZEGRADIENT, size.gradientMin._elements);
+                            // shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.SOLSizeGradientMax, size.gradientMax._elements);
                         }
                         break;
                     default:
                         break;
                 }
             }
+            */
         }
     }
 
@@ -777,12 +793,12 @@ export class ShurikenParticleSystem extends GeometryElement implements IClone {
     set rotationOverLifetime(value: RotationOverLifetime) {
         var shaDat: ShaderData = this._ownerRender._shaderValues;
 
-        shaDat.removeDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_ROTATIONOVERLIFETIME);
-        shaDat.removeDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_ROTATIONOVERLIFETIMESEPERATE);
-        shaDat.removeDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_ROTATIONOVERLIFETIMECONSTANT);
-        shaDat.removeDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_ROTATIONOVERLIFETIMECURVE);
-        shaDat.removeDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_ROTATIONOVERLIFETIMERANDOMCONSTANTS);
-        shaDat.removeDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_ROTATIONOVERLIFETIMERANDOMCURVES);
+        // shaDat.removeDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_ROTATIONOVERLIFETIME);
+        // shaDat.removeDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_ROTATIONOVERLIFETIMESEPERATE);
+        // shaDat.removeDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_ROTATIONOVERLIFETIMECONSTANT);
+        // shaDat.removeDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_ROTATIONOVERLIFETIMECURVE);
+        // shaDat.removeDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_ROTATIONOVERLIFETIMERANDOMCONSTANTS);
+        // shaDat.removeDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_ROTATIONOVERLIFETIMERANDOMCURVES);
 
         this._rotationOverLifetime = value;
 
@@ -793,66 +809,71 @@ export class ShurikenParticleSystem extends GeometryElement implements IClone {
                 return
 
             var rotationSeparate: boolean = rotation.separateAxes;
-            var rotationType: number = rotation.type;
+            //var rotationType: number = rotation.type;
             if (value.enable) {
                 if (rotationSeparate) {
-                    shaDat.addDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_ROTATIONOVERLIFETIMESEPERATE);
+                    // shaDat.addDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_ROTATIONOVERLIFETIMESEPERATE);
+                    shaDat.setBool(ShuriKenParticle3DShaderDeclaration.THREEDROTATIONOVERLIFETIMESEPERATE,true);
                 }
                 else {
-                    shaDat.addDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_ROTATIONOVERLIFETIME);
+                    // shaDat.addDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_ROTATIONOVERLIFETIME);
+                    shaDat.setBool(ShuriKenParticle3DShaderDeclaration.THREEDROTATIONOVERLIFETIMESEPERATE,false);
                 }
+                /*
+                //转到cpu计算，不行设定宏和buffer
                 switch (rotationType) {
                     case 0:
-                        shaDat.addDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_ROTATIONOVERLIFETIMECONSTANT);
+                        // shaDat.addDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_ROTATIONOVERLIFETIMECONSTANT);
                         if (rotationSeparate) {
-                            shaDat.setVector3(ShuriKenParticle3DShaderDeclaration.ROLANGULARVELOCITYCONSTSEPRARATE, rotation.constantSeparate);
+                            // shaDat.setVector3(ShuriKenParticle3DShaderDeclaration.ROLANGULARVELOCITYCONSTSEPRARATE, rotation.constantSeparate);
                         }
                         else {
-                            shaDat.setNumber(ShuriKenParticle3DShaderDeclaration.ROLANGULARVELOCITYCONST, rotation.constant);
+                            // shaDat.setNumber(ShuriKenParticle3DShaderDeclaration.ROLANGULARVELOCITYCONST, rotation.constant);
                         }
                         break;
                     case 1:
-                        shaDat.addDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_ROTATIONOVERLIFETIMECURVE);
+                        // shaDat.addDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_ROTATIONOVERLIFETIMECURVE);
                         if (rotationSeparate) {
-                            shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.ROLANGULARVELOCITYGRADIENTX, rotation.gradientX._elements);
-                            shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.ROLANGULARVELOCITYGRADIENTY, rotation.gradientY._elements);
-                            shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.ROLANGULARVELOCITYGRADIENTZ, rotation.gradientZ._elements);
+                            // shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.ROLANGULARVELOCITYGRADIENTX, rotation.gradientX._elements);
+                            // shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.ROLANGULARVELOCITYGRADIENTY, rotation.gradientY._elements);
+                            // shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.ROLANGULARVELOCITYGRADIENTZ, rotation.gradientZ._elements);
                         }
                         else {
-                            shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.ROLANGULARVELOCITYGRADIENT, rotation.gradient._elements);
+                            // shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.ROLANGULARVELOCITYGRADIENT, rotation.gradient._elements);
                         }
                         break;
                     case 2:
-                        shaDat.addDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_ROTATIONOVERLIFETIMERANDOMCONSTANTS);
+                        // shaDat.addDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_ROTATIONOVERLIFETIMERANDOMCONSTANTS);
                         if (rotationSeparate) {
-                            shaDat.setVector3(ShuriKenParticle3DShaderDeclaration.ROLANGULARVELOCITYCONSTSEPRARATE, rotation.constantMinSeparate);
-                            shaDat.setVector3(ShuriKenParticle3DShaderDeclaration.ROLANGULARVELOCITYCONSTMAXSEPRARATE, rotation.constantMaxSeparate);
+                            // shaDat.setVector3(ShuriKenParticle3DShaderDeclaration.ROLANGULARVELOCITYCONSTSEPRARATE, rotation.constantMinSeparate);
+                            // shaDat.setVector3(ShuriKenParticle3DShaderDeclaration.ROLANGULARVELOCITYCONSTMAXSEPRARATE, rotation.constantMaxSeparate);
                         }
                         else {
-                            shaDat.setNumber(ShuriKenParticle3DShaderDeclaration.ROLANGULARVELOCITYCONST, rotation.constantMin);
-                            shaDat.setNumber(ShuriKenParticle3DShaderDeclaration.ROLANGULARVELOCITYCONSTMAX, rotation.constantMax);
+                            // shaDat.setNumber(ShuriKenParticle3DShaderDeclaration.ROLANGULARVELOCITYCONST, rotation.constantMin);
+                            // shaDat.setNumber(ShuriKenParticle3DShaderDeclaration.ROLANGULARVELOCITYCONSTMAX, rotation.constantMax);
                         }
                         break;
                     case 3:
-                        shaDat.addDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_ROTATIONOVERLIFETIMERANDOMCURVES);
+                        // shaDat.addDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_ROTATIONOVERLIFETIMERANDOMCURVES);
                         if (rotationSeparate) {
-                            shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.ROLANGULARVELOCITYGRADIENTX, rotation.gradientXMin._elements);
-                            shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.ROLANGULARVELOCITYGRADIENTXMAX, rotation.gradientXMax._elements);
-                            shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.ROLANGULARVELOCITYGRADIENTY, rotation.gradientYMin._elements);
-                            shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.ROLANGULARVELOCITYGRADIENTYMAX, rotation.gradientYMax._elements);
-                            shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.ROLANGULARVELOCITYGRADIENTZ, rotation.gradientZMin._elements);
-                            shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.ROLANGULARVELOCITYGRADIENTZMAX, rotation.gradientZMax._elements);
-                            //shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.ROLANGULARVELOCITYGRADIENTW, rotation.gradientWMin._elements);
-                            //shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.ROLANGULARVELOCITYGRADIENTWMAX, rotation.gradientWMax._elements);
+                            // shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.ROLANGULARVELOCITYGRADIENTX, rotation.gradientXMin._elements);
+                            // shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.ROLANGULARVELOCITYGRADIENTXMAX, rotation.gradientXMax._elements);
+                            // shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.ROLANGULARVELOCITYGRADIENTY, rotation.gradientYMin._elements);
+                            // shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.ROLANGULARVELOCITYGRADIENTYMAX, rotation.gradientYMax._elements);
+                            // shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.ROLANGULARVELOCITYGRADIENTZ, rotation.gradientZMin._elements);
+                            // shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.ROLANGULARVELOCITYGRADIENTZMAX, rotation.gradientZMax._elements);
+                            // // shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.ROLANGULARVELOCITYGRADIENTW, rotation.gradientWMin._elements);
+                            // // shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.ROLANGULARVELOCITYGRADIENTWMAX, rotation.gradientWMax._elements);
                         }
                         else {
-                            shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.ROLANGULARVELOCITYGRADIENT, rotation.gradientMin._elements);
-                            shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.ROLANGULARVELOCITYGRADIENTMAX, rotation.gradientMax._elements);
+                            // shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.ROLANGULARVELOCITYGRADIENT, rotation.gradientMin._elements);
+                            // shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.ROLANGULARVELOCITYGRADIENTMAX, rotation.gradientMax._elements);
                         }
                         break;
                     default:
                         break;
                 }
+                */
             }
         }
     }
@@ -865,47 +886,51 @@ export class ShurikenParticleSystem extends GeometryElement implements IClone {
     }
 
     set textureSheetAnimation(value: TextureSheetAnimation) {
-        var shaDat: ShaderData = this._ownerRender._shaderValues;
+        //var shaDat: ShaderData = this._ownerRender._shaderValues;
 
-        shaDat.removeDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_TEXTURESHEETANIMATIONCURVE);
-        shaDat.removeDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_TEXTURESHEETANIMATIONRANDOMCURVE);
+        // shaDat.removeDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_TEXTURESHEETANIMATIONCURVE);
+        // shaDat.removeDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_TEXTURESHEETANIMATIONRANDOMCURVE);
 
         this._textureSheetAnimation = value;
 
         if (value) {
+            /*
+            //转到cpu计算，不行设定宏和buffer
             var frameOverTime: FrameOverTime = value.frame;
             var textureAniType: number = frameOverTime.type;
+            
             if (value.enable) {
                 switch (textureAniType) {
                     case 1:
-                        shaDat.addDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_TEXTURESHEETANIMATIONCURVE);
+                        // shaDat.addDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_TEXTURESHEETANIMATIONCURVE);
 
-                        shaDat.setNumber(ShuriKenParticle3DShaderDeclaration.TEXTURESHEETANIMATIONCYCLES, value.cycles);
-                        var title: Vector2 = value.tiles;
-                        var _uvLengthE: Vector2 = this._uvLength;
-                        _uvLengthE.x = 1.0 / title.x;
-                        _uvLengthE.y = 1.0 / title.y;
-                        shaDat.setVector2(ShuriKenParticle3DShaderDeclaration.TEXTURESHEETANIMATIONSUBUVLENGTH, this._uvLength);
+                        // shaDat.setNumber(ShuriKenParticle3DShaderDeclaration.TEXTURESHEETANIMATIONCYCLES, value.cycles);
+                        // var title: Vector2 = value.tiles;
+                        // var _uvLengthE: Vector2 = this._uvLength;
+                        // _uvLengthE.x = 1.0 / title.x;
+                        // _uvLengthE.y = 1.0 / title.y;
+                        // shaDat.setVector2(ShuriKenParticle3DShaderDeclaration.TEXTURESHEETANIMATIONSUBUVLENGTH, this._uvLength);
 
-                        shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.TEXTURESHEETANIMATIONGRADIENTUVS, frameOverTime.frameOverTimeData._elements);
+                        // shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.TEXTURESHEETANIMATIONGRADIENTUVS, frameOverTime.frameOverTimeData._elements);
                         break;
                     case 3:
-                        shaDat.addDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_TEXTURESHEETANIMATIONRANDOMCURVE);
+                        // shaDat.addDefine(ShuriKenParticle3DShaderDeclaration.SHADERDEFINE_TEXTURESHEETANIMATIONRANDOMCURVE);
 
-                        shaDat.setNumber(ShuriKenParticle3DShaderDeclaration.TEXTURESHEETANIMATIONCYCLES, value.cycles);
-                        var title: Vector2 = value.tiles;
-                        var _uvLengthE: Vector2 = this._uvLength;
-                        _uvLengthE.x = 1.0 / title.x;
-                        _uvLengthE.y = 1.0 / title.y;
-                        shaDat.setVector2(ShuriKenParticle3DShaderDeclaration.TEXTURESHEETANIMATIONSUBUVLENGTH, this._uvLength);
+                        // shaDat.setNumber(ShuriKenParticle3DShaderDeclaration.TEXTURESHEETANIMATIONCYCLES, value.cycles);/
+                        // var title: Vector2 = value.tiles;
+                        // var _uvLengthE: Vector2 = this._uvLength;
+                        // _uvLengthE.x = 1.0 / title.x;
+                        // _uvLengthE.y = 1.0 / title.y;
+                        // shaDat.setVector2(ShuriKenParticle3DShaderDeclaration.TEXTURESHEETANIMATIONSUBUVLENGTH, this._uvLength);
 
-                        shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.TEXTURESHEETANIMATIONGRADIENTUVS, frameOverTime.frameOverTimeDataMin._elements);
-                        shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.TEXTURESHEETANIMATIONGRADIENTMAXUVS, frameOverTime.frameOverTimeDataMax._elements);
+                        // shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.TEXTURESHEETANIMATIONGRADIENTUVS, frameOverTime.frameOverTimeDataMin._elements);
+                        // shaDat.setBuffer(ShuriKenParticle3DShaderDeclaration.TEXTURESHEETANIMATIONGRADIENTMAXUVS, frameOverTime.frameOverTimeDataMax._elements);
                         break;
                     default:
                         break;
                 }
             }
+            */
         }
     }
 
@@ -1589,6 +1614,7 @@ export class ShurikenParticleSystem extends GeometryElement implements IClone {
                     this._vertexBuffer = LayaGL.renderOBJCreate.createVertexBuffer3D(vbMemorySize, BufferUsage.Dynamic, false);
                     this._vertexBuffer.vertexDeclaration = vertexDeclaration;
                     this._vertices = new Float32Array(this._floatCountPerVertex * lastVBVertexCount);
+                    this._currentVertices = new Float32Array(this._floatCountPerVertex * lastVBVertexCount);
 
                     // if (render.renderMode == 4) {
                     // 	this.initVertexWithMesh(this._vertices, mesh);
@@ -1623,6 +1649,7 @@ export class ShurikenParticleSystem extends GeometryElement implements IClone {
                 this._vertexBuffer = LayaGL.renderOBJCreate.createVertexBuffer3D(vbMemorySize, BufferUsage.Dynamic, false);
                 this._vertexBuffer.vertexDeclaration = vertexDeclaration;
                 this._vertices = new Float32Array(this._floatCountPerVertex * this._bufferMaxParticles * this._vertexStride);
+                this._currentVertices = new Float32Array(this._floatCountPerVertex * this._bufferMaxParticles * this._vertexStride);
 
 
                 for (i = 0; i < this._bufferMaxParticles; i++) {
@@ -1959,6 +1986,10 @@ export class ShurikenParticleSystem extends GeometryElement implements IClone {
 
             //StartSpeed
             this._vertices[offset++] = startSpeed;
+            //zzs:pos
+            this._vertices[offset++] = startSpeed;
+            this._vertices[offset++] = startSpeed;
+            this._vertices[offset++] = startSpeed;
 
             //this._vertices[offset] = Math.random();
 
@@ -2000,6 +2031,196 @@ export class ShurikenParticleSystem extends GeometryElement implements IClone {
         return true;
     }
 
+    
+    //zzw:cpu par start
+    setVeticesDatas(vertices:Float32Array,currentVertices:Float32Array,vertexDeclaration:VertexDeclaration,startChangeIndex:number,endChangeIndex:number)
+    {
+        //emitTime
+        let emitTimeIndex = vertexDeclaration.getVertexElementByUsage(VertexShuriKenParticle.PARTICLE_DIRECTIONTIME).offset / 4 + 3;
+        //lifeTime
+        let startLifeTimeIndex = vertexDeclaration.getVertexElementByUsage(VertexShuriKenParticle.PARTICLE_SHAPEPOSITIONSTARTLIFETIME).offset / 4 + 3;
+        //random0 :vec4
+        let random0Index = vertexDeclaration.getVertexElementByUsage(VertexShuriKenParticle.PARTICLE_RANDOM0).offset / 4;
+        //random1 :vec4
+        let random1Index = vertexDeclaration.getVertexElementByUsage(VertexShuriKenParticle.PARTICLE_RANDOM1).offset / 4;
+        //startSpeed : float => currentPositionStartSpeed : vec4
+        let startSpeedIndex = vertexDeclaration.getVertexElementByUsage(VertexShuriKenParticle.PARTICLE_STARTSPEED).offset / 4;
+        //startColor : color => currentColor : color
+        let startColorIndex = vertexDeclaration.getVertexElementByUsage(VertexShuriKenParticle.PARTICLE_STARTCOLOR0).offset / 4;
+        //startSize : vec3 => currentSize : vec3
+        let startSizeIndex = vertexDeclaration.getVertexElementByUsage(VertexShuriKenParticle.PARTICLE_STARTSIZE).offset / 4;
+        //startRotation : vec3 => currentRotation : vec3
+        let startRotateIndex = vertexDeclaration.getVertexElementByUsage(VertexShuriKenParticle.PARTICLE_STARTROTATION).offset / 4;
+        //simulateUV.xy : vec2 => currentUVOffset : vec2
+        let simulateUVIndex = vertexDeclaration.getVertexElementByUsage(VertexShuriKenParticle.PARTICLE_SIMULATIONUV).offset / 4;
+
+        let offset = vertexDeclaration.vertexStride /4;
+
+        for(let vc = startChangeIndex * offset;vc < endChangeIndex * offset;vc += offset)
+        {
+            let vStartLifeTime = vertices[vc + startLifeTimeIndex];
+            if(vStartLifeTime === 0)
+            {
+                continue;
+            }
+            let vEmitTime = vertices[vc + emitTimeIndex];
+            let age = this._currentTime - vEmitTime;
+            if(age< 0.0)
+            {
+                continue;
+            }
+            //todo:可能有些bug
+            let normalizeAge = age/vStartLifeTime;
+            
+            //不可跳过，在随机初始生命周期时候会有闪烁问题
+            // if(normalizeAge > 1.0)
+            // {
+            //     continue;
+            // }
+
+            ShurikenParticlePerVertexData.startLifetime = vStartLifeTime;
+            ShurikenParticlePerVertexData.setRandom0Value(vertices,vc + random0Index);
+            ShurikenParticlePerVertexData.setRandom1Value(vertices,vc + random1Index);
+
+            ShurikenParticleExtension.updateLifetimeModule(normalizeAge,this);
+            //currentPos
+            currentVertices[vc + startSpeedIndex]     =  ShurikenParticleLifetimeData.outLifePos.x;
+            currentVertices[vc + startSpeedIndex + 1] =  ShurikenParticleLifetimeData.outLifePos.y;
+            currentVertices[vc + startSpeedIndex + 2] =  ShurikenParticleLifetimeData.outLifePos.z;
+            //currentColor 
+            currentVertices[vc + startColorIndex]     =  vertices[vc + startColorIndex]     * ShurikenParticleLifetimeData.outColor.r;
+            currentVertices[vc + startColorIndex + 1] =  vertices[vc + startColorIndex + 1] * ShurikenParticleLifetimeData.outColor.g;
+            currentVertices[vc + startColorIndex + 2] =  vertices[vc + startColorIndex + 2] * ShurikenParticleLifetimeData.outColor.b;
+            currentVertices[vc + startColorIndex + 3] =  vertices[vc + startColorIndex + 3] * ShurikenParticleLifetimeData.outColor.a;
+            //currentSize 
+            currentVertices[vc + startSizeIndex]      =  vertices[vc + startSizeIndex]      * ShurikenParticleLifetimeData.outSize.x;
+            currentVertices[vc + startSizeIndex + 1]  =  vertices[vc + startSizeIndex + 1]  * ShurikenParticleLifetimeData.outSize.y;
+            currentVertices[vc + startSizeIndex + 2]  =  vertices[vc + startSizeIndex + 2]  * ShurikenParticleLifetimeData.outSize.z;
+            //currentRotation
+            switch(this._ownerRender.renderMode)
+            {
+                case 0: 
+                    if(this.threeDStartRotation){
+                        //广告板模式下,3D起始旋转
+                        //旋转只对z轴有效，xy轴不变 旋转结果为 startRotation.z + lifetimeRotation.z
+                        currentVertices[vc + startRotateIndex]     =  vertices[vc + startRotateIndex];
+                        currentVertices[vc + startRotateIndex + 1] =  vertices[vc + startRotateIndex + 1];
+                        currentVertices[vc + startRotateIndex + 2] =  vertices[vc + startRotateIndex + 2] + ShurikenParticleLifetimeData.outRotation.z;
+                    }else{
+                        //广告板模式下,1D起始旋转
+                        //旋转只对z轴有效，xy轴不变 旋转结果为 startRotation.x + lifetimeRotation.z,将结果存到startRotation.z
+                        currentVertices[vc + startRotateIndex]     =  vertices[vc + startRotateIndex]     + ShurikenParticleLifetimeData.outRotation.z;
+                        currentVertices[vc + startRotateIndex + 1] =  vertices[vc + startRotateIndex + 1];
+                        currentVertices[vc + startRotateIndex + 2] =  vertices[vc + startRotateIndex + 2];
+                    }
+                    break;
+                case 1: 
+                    //旋转无效
+                    break;
+                case 2: 
+                case 3: 
+                    //水平或者竖直广告板模式下
+                    //旋转只对z轴有效，xy轴不变 旋转结果为 startRotation.x + lifetimeRotation.z,将结果存到startRotation.x
+                    currentVertices[vc + startRotateIndex]     =  vertices[vc + startRotateIndex]     + ShurikenParticleLifetimeData.outRotation.z;
+                    currentVertices[vc + startRotateIndex + 1] =  vertices[vc + startRotateIndex + 1];
+                    currentVertices[vc + startRotateIndex + 2] =  vertices[vc + startRotateIndex + 2];
+                    break;
+                case 4: 
+                    let rotation3d = this.rotationOverLifetime && this.rotationOverLifetime.enable && this.rotationOverLifetime.angularVelocity && this.rotationOverLifetime.angularVelocity.separateAxes;
+                    if(this.threeDStartRotation){
+                        if(rotation3d){
+                            //网格模式下，3d起始旋转
+                            //otR 为3d模式,xyz轴起始旋转，z轴ot旋转
+                            //即使ot为3d模式，shader里却也只是绕z轴旋转
+                            currentVertices[vc + startRotateIndex]     =  vertices[vc + startRotateIndex];
+                            currentVertices[vc + startRotateIndex + 1] =  vertices[vc + startRotateIndex + 1];
+                            currentVertices[vc + startRotateIndex + 2] =  vertices[vc + startRotateIndex + 2] + ShurikenParticleLifetimeData.outRotation.z;
+                        }else{
+                            //网格模式下，3d起始旋转
+                            //otR 为1d模式,xyz轴起始旋转，z轴ot旋转
+                            currentVertices[vc + startRotateIndex]     =  vertices[vc + startRotateIndex];
+                            currentVertices[vc + startRotateIndex + 1] =  vertices[vc + startRotateIndex + 1];
+                            currentVertices[vc + startRotateIndex + 2] =  vertices[vc + startRotateIndex + 2] + ShurikenParticleLifetimeData.outRotation.z;
+                        }
+                    }else{
+                        //1d起始旋转赋值在x，实际shader里应用确实z轴旋转
+                        if(rotation3d){
+                            //网格模式下，1d起始旋转
+                            //otR 为3d模式,起始旋转为z轴旋转，ot旋转应用各轴
+                            currentVertices[vc + startRotateIndex]     =  ShurikenParticleLifetimeData.outRotation.x;
+                            currentVertices[vc + startRotateIndex + 1] =  ShurikenParticleLifetimeData.outRotation.y;
+                            currentVertices[vc + startRotateIndex + 2] =  vertices[vc + startRotateIndex]     + ShurikenParticleLifetimeData.outRotation.z;
+                        }
+                        else{
+                            //网格模式下，1d起始旋转
+                            //otR 为1d模式,xy轴不变，z轴旋转，初始值在x轴
+                            currentVertices[vc + startRotateIndex]     =  0;
+                            currentVertices[vc + startRotateIndex + 1] =  0;
+                            currentVertices[vc + startRotateIndex + 2] =  vertices[vc + startRotateIndex]     + ShurikenParticleLifetimeData.outRotation.z;
+                        }
+                        
+                    }
+                    break;
+            }
+
+            //custom data 还需要ot速度，用a_Random0来传递
+            currentVertices[vc + random0Index]      =  ShurikenParticleLifetimeData.outVelocity.x;
+            currentVertices[vc + random0Index + 1]  =  ShurikenParticleLifetimeData.outVelocity.y;
+            currentVertices[vc + random0Index + 2]  =  ShurikenParticleLifetimeData.outVelocity.z;
+            
+            //currentUVOffset
+            currentVertices[vc + simulateUVIndex]     =  vertices[vc + simulateUVIndex]     + ShurikenParticleLifetimeData.outUVOffset.x;
+            currentVertices[vc + simulateUVIndex + 1] =  vertices[vc + simulateUVIndex + 1] + ShurikenParticleLifetimeData.outUVOffset.y;
+        }
+    }
+
+    _currentVertices:Float32Array = null;
+    applyLifetimeData(){
+        //不修改declaration，依旧使用原来的顶点数据结构，除了把speed改成vce4
+        //修改数据：
+        //startSpeed传递最终世界坐标下的位置和起始速度vec4
+        //startColor传递最终颜色color
+        //startSize传递最终缩放vec3
+        //startRotation传递最终旋转vec3
+
+        var render = this._ownerRender;
+        let renderMode = render.renderMode;
+        var vertexDeclaration: VertexDeclaration;
+        if (renderMode === 4) {
+            if (render.mesh) {
+                vertexDeclaration = VertexShurikenParticleMesh.vertexDeclaration;
+            }
+            else
+            {
+                //渲染网格，但是网格丢失，返回原顶点数据
+                return false;
+            }
+        }else{
+            vertexDeclaration = VertexShurikenParticleBillboard.vertexDeclaration;
+        }
+        
+        if(!vertexDeclaration)
+        {
+            //返回原顶点数据
+            return false;
+        }
+
+        //只更改要渲染的
+        if (this._firstActiveElement < this._firstFreeElement)
+        {
+            this.setVeticesDatas(this._vertices,this._currentVertices,vertexDeclaration,this._firstActiveElement,this._firstFreeElement);
+        }else{
+            this.setVeticesDatas(this._vertices,this._currentVertices,vertexDeclaration,this._firstActiveElement,this._bufferMaxParticles);
+            if(this._firstFreeElement>0)
+            this.setVeticesDatas(this._vertices,this._currentVertices,vertexDeclaration,0,this._firstFreeElement);
+        }
+        
+        return true;
+    }
+    //end
+    
+    //每帧更新的话，这里或许就用不到了
+    //粒子改变的时候，还是得赋值一遍
     addNewParticlesToVertexBuffer(): void {
         var start: number;
         var byteStride: number = this._vertexStride * this._floatCountPerVertex * 4;
@@ -2017,6 +2238,8 @@ export class ShurikenParticleSystem extends GeometryElement implements IClone {
             }
         }
         this._firstNewElement = this._firstFreeElement;
+        //同时更新实际上传递给shader的顶点数据
+        this._currentVertices = Float32Array.from(this._vertices);
     }
 
     /**
@@ -2054,23 +2277,51 @@ export class ShurikenParticleSystem extends GeometryElement implements IClone {
      * @override
      */
     _updateRenderParams(state: RenderContext3D): void {
+        //每帧更新顶点数据
+        //最大粒子数小于0的时候才修改
+        let applyed = false;
+        if(this.maxParticles > 0)
+        {
+            applyed = this.applyLifetimeData();
+        }
+        
+        var byteStride: number = this._vertexStride * this._floatCountPerVertex * 4;
+        var start: number = this._firstActiveElement * byteStride;
         //this._bufferState.bind();
         var indexCount: number;
         this.clearRenderParams();
         if (this._firstActiveElement < this._firstFreeElement) {
             indexCount = (this._firstFreeElement - this._firstActiveElement) * this._indexStride;
+            //顶点数据传递
+            if(applyed)
+            {
+                this._vertexBuffer.setData(this._currentVertices.buffer, start, start, (this._firstFreeElement - this._firstActiveElement) * byteStride);
+            }
+            
             this.setDrawElemenParams(indexCount, 2 * this._firstActiveElement * this._indexStride);
             // LayaGL.renderDrawConatext.drawElements(MeshTopology.Triangles, indexCount, IndexFormat.UInt16, 2 * this._firstActiveElement * this._indexStride);
             // Stat.trianglesFaces += indexCount / 3;
             // Stat.renderBatches++;
         } else {
             indexCount = (this._bufferMaxParticles - this._firstActiveElement) * this._indexStride;
+            //顶点数据传递
+            if(applyed)
+            {
+                this._vertexBuffer.setData(this._currentVertices.buffer, start, start, (this._bufferMaxParticles - this._firstActiveElement) * byteStride);
+            }
+
             this.setDrawElemenParams(indexCount, 2 * this._firstActiveElement * this._indexStride);
             // LayaGL.renderDrawConatext.drawElements(MeshTopology.Triangles, indexCount, IndexFormat.UInt16, 2 * this._firstActiveElement * this._indexStride);
             // Stat.trianglesFaces += indexCount / 3;
             // Stat.renderBatches++;
             if (this._firstFreeElement > 0) {
                 indexCount = this._firstFreeElement * this._indexStride;
+                //顶点数据传递
+                if(applyed)
+                {
+                    this._vertexBuffer.setData(this._currentVertices.buffer, 0, 0, this._firstFreeElement * byteStride);
+                }
+
                 this.setDrawElemenParams(indexCount, 0);
                 // LayaGL.renderDrawConatext.drawElements(MeshTopology.Triangles, indexCount, IndexFormat.UInt16, 0);
                 // Stat.trianglesFaces += indexCount / 3;

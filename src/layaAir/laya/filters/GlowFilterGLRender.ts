@@ -5,6 +5,7 @@ import { Context } from "../resource/Context"
 import { RenderTexture2D } from "../resource/RenderTexture2D"
 import { ShaderDefines2D } from "../webgl/shader/d2/ShaderDefines2D"
 import { Value2D } from "../webgl/shader/d2/value/Value2D"
+import { Filter } from "./Filter"
 import { GlowFilter } from "./GlowFilter";
 /**
  * @private
@@ -24,6 +25,7 @@ export class GlowFilterGLRender {
 		var svBlur: Value2D = Value2D.create(ShaderDefines2D.TEXTURE2D, 0);
 		this.setShaderInfo(svBlur, w, h, filter);
 		var svCP: Value2D = Value2D.create(ShaderDefines2D.TEXTURE2D, 0);
+		svCP.defines.add(Filter.FILTERCANCEL);
 		var matI: Matrix = Matrix.TEMP.identity();
 		ctx.drawTarget(rt, 0, 0, w, h, matI, svBlur);	//先画模糊的底
 		ctx.drawTarget(rt, 0, 0, w, h, matI, svCP, null, 9);		//再画原始图片,blend为9是为了解决文字边缘锯齿问题，主要是由于预乘alpha导致的，暂时先用这种方法解决

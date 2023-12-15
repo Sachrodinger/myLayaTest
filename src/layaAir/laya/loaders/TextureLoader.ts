@@ -80,59 +80,68 @@ class Texture2DLoader implements IResourceLoader {
 
         let compress = compressedFormats.indexOf(ext) != -1 ? ext : null;
         if (compress != null) {
-            return task.loader.fetch(url, "arraybuffer", task.progress.createCallback(), task.options).then(data => {
-                if (!data)
-                    return null;
-
-                let tex: BaseTexture;
-                switch (compress) {
-                    case "dds":
-                        tex = Texture2D._parseDDS(data, propertyParams, constructParams);
-                        break;
-
-                    case "ktx":
-                        let ktxInfo = KTXTextureInfo.getKTXTextureInfo(data);
-                        if (ktxInfo.dimension == TextureDimension.Cube) {
-                            //这里在core模块，不能直接引用d3里的TextureCube
-                            let cls = ClassUtils.getClass("TextureCube");
-                            if (cls) {
-                                let tc = new cls(ktxInfo.width, ktxInfo.format, ktxInfo.mipmapCount > 1, ktxInfo.sRGB);
-                                tc.setKTXData(ktxInfo);
-                                tex = tc;
+            return Loader.GetBundleData(task, url, false).then(bundleData => {
+                let p:Promise<any>;
+                if(bundleData){
+                    p = Promise.resolve(bundleData.buffer);                
+                }
+                else{
+                    p = task.loader.fetch(url, "arraybuffer", task.progress.createCallback(), task.options);
+                }
+                return p.then(data => {
+                    if (!data)
+                        return null;
+    
+                    let tex: BaseTexture;
+                    switch (compress) {
+                        case "dds":
+                            tex = Texture2D._parseDDS(data, propertyParams, constructParams);
+                            break;
+    
+                        case "ktx":
+                            let ktxInfo = KTXTextureInfo.getKTXTextureInfo(data);
+                            if (ktxInfo.dimension == TextureDimension.Cube) {
+                                //这里在core模块，不能直接引用d3里的TextureCube
+                                let cls = ClassUtils.getClass("TextureCube");
+                                if (cls) {
+                                    let tc = new cls(ktxInfo.width, ktxInfo.format, ktxInfo.mipmapCount > 1, ktxInfo.sRGB);
+                                    tc.setKTXData(ktxInfo);
+                                    tex = tc;
+                                }
+                                else
+                                    return null;
                             }
-                            else
-                                return null;
-                        }
-                        else if (ktxInfo.dimension == TextureDimension.Tex2D) {
-                            tex = Texture2D._parseKTX(data, propertyParams, constructParams);
-                        }
-                        break;
-                    case "pvr":
-                        tex = Texture2D._parsePVR(data, propertyParams, constructParams);
-                        break;
-
-                    case "hdr":
-                        tex = HDRTextureInfo._parseHDRTexture(data, propertyParams, constructParams);
-                        break;
-
-                    case "lanit.ls":
-                        tex = Texture2D._SimpleAnimatorTextureParse(data, propertyParams, constructParams);
-                        break;
-                }
-
-                let obsoluteInst = <Texture2D>task.obsoluteInst;
-                if (obsoluteInst && Object.getPrototypeOf(obsoluteInst) == Object.getPrototypeOf(tex))
-                    tex = this.move(obsoluteInst, tex);
-
-                if (propertyParams && propertyParams.hdrEncodeFormat)
-                    tex.hdrEncodeFormat = propertyParams.hdrEncodeFormat;
-
-                if (meta) {
-                    (<any>tex)._sizeGrid = meta.sizeGrid;
-                    (<any>tex)._stateNum = meta.stateNum;
-                }
-
-                return tex;
+                            else if (ktxInfo.dimension == TextureDimension.Tex2D) {
+                                tex = Texture2D._parseKTX(data, propertyParams, constructParams);
+                            }
+                            break;
+                        case "pvr":
+                            tex = Texture2D._parsePVR(data, propertyParams, constructParams);
+                            break;
+    
+                        case "hdr":
+                            tex = HDRTextureInfo._parseHDRTexture(data, propertyParams, constructParams);
+                            break;
+    
+                        case "lanit.ls":
+                            tex = Texture2D._SimpleAnimatorTextureParse(data, propertyParams, constructParams);
+                            break;
+                    }
+    
+                    let obsoluteInst = <Texture2D>task.obsoluteInst;
+                    if (obsoluteInst && Object.getPrototypeOf(obsoluteInst) == Object.getPrototypeOf(tex))
+                        tex = this.move(obsoluteInst, tex);
+    
+                    if (propertyParams && propertyParams.hdrEncodeFormat)
+                        tex.hdrEncodeFormat = propertyParams.hdrEncodeFormat;
+    
+                    if (meta) {
+                        (<any>tex)._sizeGrid = meta.sizeGrid;
+                        (<any>tex)._stateNum = meta.stateNum;
+                    }
+    
+                    return tex;
+                });
             });
         }
         else {

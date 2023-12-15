@@ -378,7 +378,7 @@ void main()
     vec3 lifeVelocity;
     if (normalizedAge < 1.0)
 	{
-	    vec3 startVelocity = a_DirectionTime.xyz * a_StartSpeed;
+	    vec3 startVelocity = a_DirectionTime.xyz * a_StartSpeed.w;
 #if defined(VELOCITYOVERLIFETIMECONSTANT) || defined(VELOCITYOVERLIFETIMECURVE) || defined(VELOCITYOVERLIFETIMERANDOMCONSTANT) || defined(VELOCITYOVERLIFETIMERANDOMCURVE)
 	    lifeVelocity = computeParticleLifeVelocity(normalizedAge); //计算粒子生命周期速度
 #endif

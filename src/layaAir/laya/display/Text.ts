@@ -1544,11 +1544,12 @@ export class Text extends Sprite {
                             }
                         }
                     } else {
+                        let upDownCol = this.upDownCol || cmd.style.upDownCol
                         let ctxFont = (<any>cmd.style)._ctxFont;
                         if (cmd.style.stroke)
-                            graphics.fillBorderText(cmd.wt, x + cmd.x, y + cmd.y, ctxFont, cmd.style.color, null, cmd.style.stroke, cmd.style.strokeColor, this.upDownCol);
+                            graphics.fillBorderText(cmd.wt, x + cmd.x, y + cmd.y, ctxFont, cmd.style.color, null, cmd.style.stroke, cmd.style.strokeColor, upDownCol);
                         else
-                            graphics.fillText(cmd.wt, x + cmd.x, y + cmd.y, ctxFont, cmd.style.color, null, this.upDownCol);
+                            graphics.fillText(cmd.wt, x + cmd.x, y + cmd.y, ctxFont, cmd.style.color, null, upDownCol);
                     }
                 }
 

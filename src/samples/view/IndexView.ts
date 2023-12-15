@@ -89,6 +89,7 @@ import { PerformanceTest_Skeleton } from "./../2d/PerformanceTest_Skeleton";
 import { IDE_Project } from "./../2d/IDE_Project";
 import { Handler } from "laya/utils/Handler"
 import { IndexViewUI } from "../ui/IndexViewUI"
+import { Filters_Mask } from "../2d/Filters_Mask";
 
 /**
  * 首页View 
@@ -122,8 +123,8 @@ export class IndexView extends IndexViewUI {
 	/************************TiledMap-end***************************/
 
 	/************************Filters-start***************************/
-	private _comboBoxFiltersClsArr: any[] = [Filters_Glow, Filters_Blur, Filters_Color];
-	private _comboBoxFiltersArr: any[] = ['发光滤镜', '模糊滤镜', '颜色滤镜'];
+	private _comboBoxFiltersClsArr: any[] = [Filters_Glow, Filters_Blur, Filters_Color , Filters_Mask];
+	private _comboBoxFiltersArr: any[] = ['发光滤镜', '模糊滤镜', '颜色滤镜' , '遮罩滤镜'];
 	/************************Filters-end***************************/
 
 	/************************Particle-start***************************/

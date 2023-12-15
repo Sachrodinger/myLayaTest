@@ -173,13 +173,13 @@ export class ScrollBar extends UIComponent {
     protected onButtonMouseDown(e: Event): void {
         var isUp: boolean = e.currentTarget === this.upButton;
         this.slide(isUp);
-        ILaya.timer.once(Styles.scrollBarDelayTime, this, this.startLoop, [isUp]);
+        ILaya.systemTimer.once(Styles.scrollBarDelayTime, this, this.startLoop, [isUp]);
         ILaya.stage.once(Event.MOUSE_UP, this, this.onStageMouseUp);
     }
 
     /**@private */
     protected startLoop(isUp: boolean): void {
-        ILaya.timer.frameLoop(1, this, this.slide, [isUp]);
+        ILaya.systemTimer.frameLoop(1, this, this.slide, [isUp]);
     }
 
     /**@private */
@@ -193,8 +193,8 @@ export class ScrollBar extends UIComponent {
      * 舞台的 <code>Event.MOUSE_DOWN</code> 事件侦听处理函数。
      */
     protected onStageMouseUp(e: Event): void {
-        ILaya.timer.clear(this, this.startLoop);
-        ILaya.timer.clear(this, this.slide);
+        ILaya.systemTimer.clear(this, this.startLoop);
+        ILaya.systemTimer.clear(this, this.slide);
     }
 
     /**
@@ -505,11 +505,11 @@ export class ScrollBar extends UIComponent {
         this._checkElastic = false;
         this._lastPoint || (this._lastPoint = new Point());
         this._lastPoint.setTo(ILaya.stage.mouseX, ILaya.stage.mouseY);
-        ILaya.timer.clear(this, this.tweenMove);
+        ILaya.systemTimer.clear(this, this.tweenMove);
         Tween.clearTween(this);
         ILaya.stage.once(Event.MOUSE_UP, this, this.onStageMouseUp2);
         ILaya.stage.once(Event.MOUSE_OUT, this, this.onStageMouseUp2);
-        ILaya.timer.frameLoop(1, this, this.loop);
+        ILaya.systemTimer.frameLoop(1, this, this.loop);
     }
 
     startDragForce(): void {
@@ -518,18 +518,18 @@ export class ScrollBar extends UIComponent {
         this._checkElastic = false;
         this._lastPoint || (this._lastPoint = new Point());
         this._lastPoint.setTo(ILaya.stage.mouseX, ILaya.stage.mouseY);
-        ILaya.timer.clear(this, this.tweenMove);
+        ILaya.systemTimer.clear(this, this.tweenMove);
         Tween.clearTween(this);
         ILaya.stage.once(Event.MOUSE_UP, this, this.onStageMouseUp2);
         ILaya.stage.once(Event.MOUSE_OUT, this, this.onStageMouseUp2);
-        ILaya.timer.frameLoop(1, this, this.loop);
+        ILaya.systemTimer.frameLoop(1, this, this.loop);
     }
 
     private cancelDragOp(): void {
         ILaya.stage.off(Event.MOUSE_UP, this, this.onStageMouseUp2);
         ILaya.stage.off(Event.MOUSE_OUT, this, this.onStageMouseUp2);
-        ILaya.timer.clear(this, this.tweenMove);
-        ILaya.timer.clear(this, this.loop);
+        ILaya.systemTimer.clear(this, this.tweenMove);
+        ILaya.systemTimer.clear(this, this.loop);
         this._target.mouseEnabled = true;
     }
 
@@ -562,7 +562,7 @@ export class ScrollBar extends UIComponent {
 
     startTweenMoveForce(lastOffset: number): void {
         this._lastOffset = lastOffset;
-        ILaya.timer.frameLoop(1, this, this.tweenMove, [200]);
+        ILaya.systemTimer.frameLoop(1, this, this.tweenMove, [200]);
     }
     /**@private */
     protected loop(): void {
@@ -637,7 +637,7 @@ export class ScrollBar extends UIComponent {
     protected onStageMouseUp2(e: Event): void {
         ILaya.stage.off(Event.MOUSE_UP, this, this.onStageMouseUp2);
         ILaya.stage.off(Event.MOUSE_OUT, this, this.onStageMouseUp2);
-        ILaya.timer.clear(this, this.loop);
+        ILaya.systemTimer.clear(this, this.loop);
 
         if (this._clickOnly) {
             if (this._value >= this.min && this._value <= this.max)
@@ -675,7 +675,7 @@ export class ScrollBar extends UIComponent {
             }
             if (offset > 250) this._lastOffset = this._lastOffset > 0 ? 250 : -250;
             var dis: number = Math.round(Math.abs(this.elasticDistance * (this._lastOffset / 150)));
-            ILaya.timer.frameLoop(1, this, this.tweenMove, [dis]);
+            ILaya.systemTimer.frameLoop(1, this, this.tweenMove, [dis]);
         }
     }
 
@@ -710,7 +710,7 @@ export class ScrollBar extends UIComponent {
         this.value -= this._lastOffset;
         //if (Math.abs(_lastOffset) < 1 || value == max || value == min) 
         if (Math.abs(this._lastOffset) < 0.1) {
-            ILaya.timer.clear(this, this.tweenMove);
+            ILaya.systemTimer.clear(this, this.tweenMove);
             if (this._isElastic) {
                 if (this._value < this.min) {
                     Tween.to(this, { value: this.min }, this.elasticBackTime, Ease.sineOut, Handler.create(this, this.elasticOver));
@@ -733,7 +733,7 @@ export class ScrollBar extends UIComponent {
      */
     stopScroll(): void {
         this.onStageMouseUp2(null);
-        ILaya.timer.clear(this, this.tweenMove);
+        ILaya.systemTimer.clear(this, this.tweenMove);
         Tween.clearTween(this);
     }
 

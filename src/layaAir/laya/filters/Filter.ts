@@ -13,6 +13,7 @@ import { ShaderDefines2D } from "../webgl/shader/d2/ShaderDefines2D"
 import { Value2D } from "../webgl/shader/d2/value/Value2D"
 import { SubmitCMD } from "../webgl/submit/SubmitCMD"
 import { ColorFilter } from "./ColorFilter";
+import { MaskFilter } from "./MaskFilter";
 
 /**
  * <code>Filter</code> 是滤镜基类。
@@ -24,8 +25,13 @@ export class Filter implements IFilter {
     static COLOR: number = 0x20;
     /**@private 发光滤镜。*/
     static GLOW: number = 0x08;
+    
+    static MASK :number = 0x02;
+
+    static FILTERCANCEL :number = 0x8000;
     /** @internal*/
     _glRender: any;
+    
 
     /**
      * 创建一个 <code>Filter</code> 实例。
@@ -48,8 +54,11 @@ export class Filter implements IFilter {
                 context.restore();
                 return;
             }
+        
+  
             //思路：依次遍历滤镜，每次滤镜都画到out的RenderTarget上，然后把out画取src的RenderTarget做原图，去叠加新的滤镜
             var svCP: Value2D = Value2D.create(ShaderDefines2D.TEXTURE2D, 0);	//拷贝用shaderValue
+            svCP.defines.add(Filter.FILTERCANCEL);
             var b: Rectangle;
 
             var p: Point = Point.TEMP;
@@ -95,13 +104,15 @@ export class Filter implements IFilter {
                 source = WebGLRTMgr.getRT(b.width, b.height);
                 var outRT: RenderTexture2D = out = WebGLRTMgr.getRT(b.width, b.height);
                 sprite._getCacheStyle().filterCache = out;
-                //使用RT
+                //将activeRT blit到一张RT
                 webglctx.pushRT();
+                //将当前RT传给source
                 webglctx.useRT(source);
                 var tX: number = sprite.x - tSX + tHalfPadding;
                 var tY: number = sprite.y - tSY + tHalfPadding;
-                //执行节点的渲染
+                //执行节点的渲染 绘制原图 activeRT为这张图
                 next._fun.call(next, sprite, context, tX, tY);
+
                 webglctx.useRT(outRT);
                 for (var i: number = 0; i < len; i++) {
                     if (i != 0) {
@@ -117,18 +128,27 @@ export class Filter implements IFilter {
                         case Filter.BLUR:
                             fil._glRender && fil._glRender.render(source, context, b.width, b.height, fil);
                             //BlurFilterGLRender.render(source, context, b.width, b.height, fil as BlurFilter);
+                            webglctx.breakNextMerge();
                             break;
                         case Filter.GLOW:
                             //GlowFilterGLRender.render(source, context, b.width, b.height, fil as GlowFilter);
                             fil._glRender && fil._glRender.render(source, context, b.width, b.height, fil);
+                            webglctx.breakNextMerge();
                             break;
                         case Filter.COLOR:
                             webglctx.setColorFilter((<ColorFilter>fil));
-                            webglctx.drawTarget(source, 0, 0, b.width, b.height, Matrix.EMPTY.identity(), Value2D.create(ShaderDefines2D.TEXTURE2D, 0));
+                            var val :Value2D =  Value2D.create(ShaderDefines2D.TEXTURE2D, 0);
+                            val.defines.add(Filter.FILTERCANCEL);
+                            webglctx.drawTarget(source, 0, 0, b.width, b.height, Matrix.EMPTY.identity(),val);
                             webglctx.setColorFilter(null);
+                            break;
+                        case Filter.MASK:
+                            fil._glRender && fil._glRender.render(source , context ,b.width , b.height ,fil);
+                            webglctx.breakNextMerge();
                             break;
                     }
                 }
+                //将blit的rt传给activeRT
                 webglctx.popRT();
             } else {
 

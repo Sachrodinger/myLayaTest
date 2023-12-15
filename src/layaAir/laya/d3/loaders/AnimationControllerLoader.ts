@@ -2,26 +2,39 @@ import { TypeAnimatorLayer, TypeAnimatorState } from "../../components/AnimatorC
 import { IResourceLoader, ILoadTask, Loader } from "../../net/Loader";
 import { AnimatorController } from "../component/Animator/AnimatorController";
 import { URL } from "../../net/URL";
+
 class AnimationControllerLoader implements IResourceLoader {
     load(task: ILoadTask) {
-        return task.loader.fetch(task.url, "json", task.progress.createCallback(0.2), task.options).then(data => {
-            let ret = new AnimatorController(data);
-            if (ret.data && ret.data.controllerLayers) {
-                let layers = ret.data.controllerLayers;
-                let promises: Array<any> = [];
-                for (let i = layers.length - 1; i >= 0; i--) {
-                    if (layers[i].avatarMask) {
-                        this.loadAvatarMask(layers[i], promises, task);
-                    }
-                    let states = layers[i].states;
-                    this.loadStates(states, promises, task);
-
-                }
-                return Promise.all(promises).then(() => ret);
+        return Loader.GetBundleData(task, task.url).then(res=>{
+            
+            let p:Promise<any>;
+            if (res){
+                p = Promise.resolve(JSON.parse(res));
             }
             else
-                return ret;
+            {
+                p = task.loader.fetch(task.url, "json", task.progress.createCallback(0.2), task.options);
+            }
+            return p.then(data => {
+                let ret = new AnimatorController(data);
+                if (ret.data && ret.data.controllerLayers) {
+                    let layers = ret.data.controllerLayers;
+                    let promises: Array<any> = [];
+                    for (let i = layers.length - 1; i >= 0; i--) {
+                        if (layers[i].avatarMask) {
+                            this.loadAvatarMask(layers[i], promises, task);
+                        }
+                        let states = layers[i].states;
+                        this.loadStates(states, promises, task);
+    
+                    }
+                    return Promise.all(promises).then(() => ret);
+                }
+                else
+                    return Promise.resolve(ret);
+            });
         });
+        
     }
     loadAvatarMask(l: TypeAnimatorLayer, promises: Array<any>, task: ILoadTask) {
         let basePath = URL.getPath(task.url);

@@ -120,9 +120,13 @@ export class HtmlParser {
 
                         this._style.fontSize = XMLUtils.getInt(XMLIterator.attributes, "size", this._style.fontSize);
                         let color: string = XMLIterator.getAttribute("color");
+                        let upDownColor: string = XMLIterator.getAttribute("updowncolor");
                         if (color != null) {
                             this._style.color = color;
                             (<any>this._style).colorChanged = true;
+                        } else if (upDownColor != null) {
+                            let colorArray = upDownColor.split(",");
+                            this._style.upDownCol = colorArray;
                         }
                     }
                     else if (XMLIterator.tagType == XMLTagType.End)

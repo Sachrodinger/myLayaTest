@@ -378,7 +378,7 @@ export class TextRender {
         }
         var scid:int = mapColor[strokeColor];
         */
-        var key = str + '_' + fid + '_' + font._size + '_' + color;
+        var key = str + '_' + fid + '_' + font._size + '_' + color + '_' + upDownCol;
         if (lineWidth > 0)
             key += '_' + strokeColor! + lineWidth;
         if (font._bold)

@@ -96,7 +96,7 @@ import { IndexViewUI } from "../ui/IndexViewUI"
 import { Sprite } from "laya/display/Sprite";
 import { Main } from "../Main";
 import Sprite_ScreenShot from "../2d/Sprite_ScreenShot";
-import { Physics_Tumbler } from "../2d/PhySics_Tumbler";
+import { Physics_Tumbler } from "../2d/Physics_Tumbler";
 import { Physics_CollisionFiltering } from "../2d/Physics_CollisionFiltering";
 import { Physics_Strandbeests } from "../2d/Physics_Strandbeests";
 import { Physics_Bridge } from "../2d/Physics_Bridge";
@@ -106,6 +106,7 @@ import Client from "../Client";
 import { UI_FontClip } from "../2d/UI_FontClip";
 import { ScrollType } from "laya/ui/Styles";
 import { Browser } from "laya/utils/Browser";
+import { Filters_Mask } from "../2d/Filters_Mask";
 
 /**
  * 首页View 
@@ -148,8 +149,8 @@ export class IndexView2D extends IndexViewUI {
 	/************************TiledMap-end***************************/
 
 	/************************Filters-start***************************/
-	private _comboBoxFiltersClsArr: any[] = [Filters_Glow, Filters_Blur, Filters_Color];
-	private _comboBoxFiltersArr: any[] = ['发光滤镜', '模糊滤镜', '颜色滤镜'];
+	private _comboBoxFiltersClsArr: any[] = [Filters_Glow, Filters_Blur, Filters_Color , Filters_Mask];
+	private _comboBoxFiltersArr: any[] = ['发光滤镜', '模糊滤镜', '颜色滤镜' , '遮罩滤镜'];
 	/************************Filters-end***************************/
 
 	/************************Particle-start***************************/

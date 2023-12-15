@@ -905,8 +905,8 @@ export class Mesh extends Resource implements IClone {
 
     // author: yxx
     // date: 2023年8月17日  
-    static createMesh(vertexDeclaration: VertexDeclaration, vertices: Float32Array, indices: Uint16Array): Mesh {
-		var mesh: Mesh = new Mesh();
+    static createMesh(vertexDeclaration: VertexDeclaration, vertices: Float32Array, indices: Uint16Array,isReadable: boolean = true): Mesh {
+		var mesh: Mesh = new Mesh(isReadable);
 		var subMesh: SubMesh = new SubMesh(mesh);
 		var vertexBuffer: VertexBuffer3D = LayaGL.renderOBJCreate.createVertexBuffer3D(vertices.length * 4, BufferUsage.Static, true);
 		vertexBuffer.vertexDeclaration = vertexDeclaration;
@@ -935,7 +935,7 @@ export class Mesh extends Resource implements IClone {
 		var subMeshes: SubMesh[] = [];
 		subMeshes.push(subMesh);
 		mesh._setSubMeshes(subMeshes);
-		mesh.calculateBounds();
+        if(mesh._isReadable) mesh.calculateBounds();
 		var memorySize: number = vertexBuffer._byteLength + indexBuffer._byteLength;
 		mesh._setCPUMemory(memorySize);
 		mesh._setGPUMemory(memorySize);
@@ -966,7 +966,7 @@ export class Mesh extends Resource implements IClone {
         for (let i = 0; i < mesh.subMeshCount; i++) {
             var subMesh: SubMesh = mesh._subMeshes[i];
 
-            subMesh._vertexBuffer = vertexBuffer;
+            subMesh._vertexBuffer = mesh._vertexBuffer;
             subMesh._indexBuffer = mesh._indexBuffer;
             subMesh._setIndexRange(0, mesh._indexBuffer.indexCount);
 
@@ -980,7 +980,7 @@ export class Mesh extends Resource implements IClone {
             subIndexBufferCount[0] = mesh._indexBuffer.indexCount;
         }
 
-		mesh.calculateBounds();
+		if(mesh._isReadable) mesh.calculateBounds();
 		var memorySize: number = mesh._vertexBuffer._byteLength + mesh._indexBuffer._byteLength;
 		mesh._setCPUMemory(memorySize);
 		mesh._setGPUMemory(memorySize);

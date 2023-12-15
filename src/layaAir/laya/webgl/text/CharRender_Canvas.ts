@@ -145,7 +145,7 @@ export class CharRender_Canvas extends ICharRender {
 		}
 
         if (upDownCol) {
-            ctx.fillStyle = this.getLingrad(ctx, char, upDownCol);
+            ctx.fillStyle = this.getLingrad(ctx, cri, char, upDownCol);
 			ctx.fillText(char, margin_left, margin_top + sz / 2);
         }
 		else if (colStr) {
@@ -219,7 +219,7 @@ export class CharRender_Canvas extends ICharRender {
 				ctx.fillAndStrokeText(char, 0, sz / 2);
 			} else {
                 if (upDownCol) {
-                    ctx.fillStyle = this.getLingrad(ctx, char, upDownCol);
+                    ctx.fillStyle = this.getLingrad(ctx, cri, char, upDownCol);
                     ctx.fillText(char, margin_left, margin_top + sz / 2);
                 } else {
                     ctx.strokeText(char, 0, sz / 2);
@@ -228,7 +228,7 @@ export class CharRender_Canvas extends ICharRender {
 			}
 		} else if (colStr) {
             if (upDownCol) {
-                ctx.fillStyle = this.getLingrad(ctx, char, upDownCol);
+                ctx.fillStyle = this.getLingrad(ctx, cri, char, upDownCol);
                 ctx.fillText(char, margin_left, margin_top + sz / 2);
             } else {
                 ctx.fillStyle = colStr;
@@ -247,14 +247,15 @@ export class CharRender_Canvas extends ICharRender {
 		return CharRender_Canvas.canvas;
 	}
 
-    getLingrad(ctx:any, char:string, colors:string[]) {
-        let textMetrics = ctx.measureText(char);
-        let text_height = textMetrics.fontBoundingBoxDescent;
+    getLingrad(ctx:any, cri: CharRenderInfo, char:string, colors:string[]) {
+        //let textMetrics = ctx.measureText(char);
+        //let text_height = textMetrics.fontBoundingBoxDescent;
+		let text_height = cri.height;
         let gradient = ctx.createLinearGradient(
             0,
             0,
             0,
-            text_height + text_height
+            text_height
         );
         colors.map((item,i) =>{
             //偏移值根据颜色个数平均分。

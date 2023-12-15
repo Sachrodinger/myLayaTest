@@ -13,11 +13,12 @@ export class BlurFilterGLRender {
     render(rt: RenderTexture2D, ctx: Context, width: number, height: number, filter: BlurFilter): void {
         var shaderValue: Value2D = Value2D.create(ShaderDefines2D.TEXTURE2D, 0);
         this.setShaderInfo(shaderValue, filter, rt.width, rt.height);
-        ctx.drawTarget(rt, 0, 0, width, height, Matrix.EMPTY.identity(), shaderValue);
+        ctx.drawTarget(rt, 0, 0, width, height, Matrix.EMPTY.identity(), shaderValue );
     }
 
     setShaderInfo(shader: Value2D, filter: BlurFilter, w: number, h: number): void {
         shader.defines.add(Filter.BLUR);
+        shader.defines.add(Filter.FILTERCANCEL);
         var sv: any = (<any>shader);
         BlurFilterGLRender.blurinfo[0] = w; BlurFilterGLRender.blurinfo[1] = h;
         sv.blurInfo = BlurFilterGLRender.blurinfo;

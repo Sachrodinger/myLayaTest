@@ -73,8 +73,16 @@ export class RenderableSprite3D extends Sprite3D {
 	static MorphActiveCount: number;
 
 	
-	///** @internal */
+	/** 
+	 * @internal
+	 * spine3d 第一张贴图
+	*/
 	static CustomMainTex: number;
+	/** 
+	 * @internal
+	 * spine3d 第二张贴图
+	*/
+	static CustomSecondTex: number;
 
 	//--------------------------------------------------------deprecated------------------------------------------------------------------------
 	/**
@@ -159,6 +167,7 @@ export class RenderableSprite3D extends Sprite3D {
 		RenderableSprite3D.IBLROUGHNESSLEVEL = Shader3D.propertyNameToID("u_IBLRoughnessLevel");
 
 		RenderableSprite3D.CustomMainTex = Shader3D.propertyNameToID("u_CustomMainTex");
+		RenderableSprite3D.CustomSecondTex = Shader3D.propertyNameToID("u_CustomSecondTex");
 
 		const commandUniform = LayaGL.renderOBJCreate.createGlobalUniformMap("Sprite3D");
 
@@ -205,6 +214,7 @@ export class RenderableSprite3D extends Sprite3D {
 		commandUniform.addShaderUniform(RenderableSprite3D.REFLECTIONINTENSITY, "u_ReflectionIntensity");
 
 		commandUniform.addShaderUniform(RenderableSprite3D.CustomMainTex, "u_CustomMainTex");
+		commandUniform.addShaderUniform(RenderableSprite3D.CustomSecondTex, "u_CustomSecondTex");
 
 
 		//Legency Reflectexture
