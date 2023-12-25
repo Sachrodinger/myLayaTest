@@ -9,4 +9,6 @@ build
 .history
 buildcode.bat
 copycode.bat
+build.bat
+编译.bat
 .svn

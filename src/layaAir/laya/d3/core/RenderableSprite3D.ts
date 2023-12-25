@@ -83,6 +83,11 @@ export class RenderableSprite3D extends Sprite3D {
 	 * spine3d 第二张贴图
 	*/
 	static CustomSecondTex: number;
+	/** 
+	 * @internal
+	 * spine3d 是否预乘Alpha
+	*/
+	static PreAlpha: number;
 
 	//--------------------------------------------------------deprecated------------------------------------------------------------------------
 	/**
@@ -168,6 +173,7 @@ export class RenderableSprite3D extends Sprite3D {
 
 		RenderableSprite3D.CustomMainTex = Shader3D.propertyNameToID("u_CustomMainTex");
 		RenderableSprite3D.CustomSecondTex = Shader3D.propertyNameToID("u_CustomSecondTex");
+		RenderableSprite3D.PreAlpha = Shader3D.propertyNameToID("u_preAlpha");
 
 		const commandUniform = LayaGL.renderOBJCreate.createGlobalUniformMap("Sprite3D");
 
@@ -215,6 +221,7 @@ export class RenderableSprite3D extends Sprite3D {
 
 		commandUniform.addShaderUniform(RenderableSprite3D.CustomMainTex, "u_CustomMainTex");
 		commandUniform.addShaderUniform(RenderableSprite3D.CustomSecondTex, "u_CustomSecondTex");
+		commandUniform.addShaderUniform(RenderableSprite3D.PreAlpha, "u_preAlpha");
 
 
 		//Legency Reflectexture

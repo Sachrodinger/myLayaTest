@@ -13,6 +13,7 @@ import { GLSLCodeGenerator } from "./GLSLCodeGenerator";
 import { RenderState } from "./RenderState";
 import { ShaderInstance } from "./ShaderInstance";
 import { RenderCapable } from "../RenderEnum/RenderCapable";
+import { WebGLEngine } from "../RenderEngine/WebGLEngine/WebGLEngine";
 
 /**
  * <code>ShaderPass</code> 类用于实现ShaderPass。
@@ -72,6 +73,10 @@ export class ShaderPass extends ShaderCompileDefineBase {
      * @internal
      */
     withCompile(compileDefine: DefineDatas): ShaderInstance {
+        if(!(LayaGL.renderEngine as WebGLEngine).isWebGL2)
+        {
+            compileDefine.add(Shader3D.getDefineByName("WebGL1"));
+        }
         var debugDefineString: string[] = ShaderPass._debugDefineStrings;
         var debugDefineMask: number[] = ShaderPass._debugDefineMasks;
         var debugMaskLength: number;
