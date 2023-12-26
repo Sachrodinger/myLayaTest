@@ -14,6 +14,8 @@ import { Utils } from "../utils/Utils";
 import { RenderTexture } from "../resource/RenderTexture";
 import { VideoTexture } from "../media/VideoTexture";
 import { LayaEnv } from "../../LayaEnv";
+import { LayaGL } from "../layagl/LayaGL";
+import { GLTextureContext } from "../RenderEngine/RenderEngine/WebGLEngine/GLTextureContext";
 
 var internalResources: Record<string, Texture2D>;
 
@@ -56,6 +58,10 @@ class Texture2DLoader implements IResourceLoader {
         let url = task.url;
         if (meta) {
             let platform = Browser.platform;
+            let gltexcontext = LayaGL.renderEngine.getTextureContext() as GLTextureContext;
+            if(gltexcontext && !gltexcontext._compressedTextureASTC){
+                platform = 0;
+            }
             let fileIndex = meta.platforms?.[platform] || 0;
             let fileInfo = meta.files?.[fileIndex];
             if (fileInfo.file) {

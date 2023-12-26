@@ -73,7 +73,8 @@ export class ShaderPass extends ShaderCompileDefineBase {
      * @internal
      */
     withCompile(compileDefine: DefineDatas): ShaderInstance {
-        if(!(LayaGL.renderEngine as WebGLEngine).isWebGL2)
+        let webGLEngine = LayaGL.renderEngine as WebGLEngine;
+        if(webGLEngine && !webGLEngine.isWebGL2)
         {
             compileDefine.add(Shader3D.getDefineByName("WebGL1"));
         }

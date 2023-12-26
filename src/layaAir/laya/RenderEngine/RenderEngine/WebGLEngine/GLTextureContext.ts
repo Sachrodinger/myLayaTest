@@ -23,7 +23,7 @@ export class GLTextureContext extends GLObject implements ITextureContext {
     protected _compressedTextureEtc1: any;
     protected _compressedTextureS3tc: any;
     protected _compressedTextureETC: any;
-    protected _compressedTextureASTC: any;
+    public _compressedTextureASTC: any;
     protected _webgl_depth_texture: any;
 
     constructor(engine: WebGLEngine) {
