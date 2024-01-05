@@ -14,6 +14,7 @@ import { RenderState } from "./RenderState";
 import { ShaderInstance } from "./ShaderInstance";
 import { RenderCapable } from "../RenderEnum/RenderCapable";
 import { WebGLEngine } from "../RenderEngine/WebGLEngine/WebGLEngine";
+import { Browser } from "../../utils/Browser";
 
 /**
  * <code>ShaderPass</code> 类用于实现ShaderPass。
@@ -74,7 +75,7 @@ export class ShaderPass extends ShaderCompileDefineBase {
      */
     withCompile(compileDefine: DefineDatas): ShaderInstance {
         let webGLEngine = LayaGL.renderEngine as WebGLEngine;
-        if(webGLEngine && !webGLEngine.isWebGL2)
+        if(webGLEngine && !webGLEngine.isWebGL2 && Browser.platform == Browser.PLATFORM_PC)
         {
             compileDefine.add(Shader3D.getDefineByName("WebGL1"));
         }
